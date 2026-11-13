@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>알면 받는 보상 사례</title>
+<style>
+  /* 미니루트 5색: 키 #EAF0CC · 서브 #769636 · 테두리 #B5D334 + 글씨 #1F2A12 · 바탕 #F6F7F2 */
+  :root { --key: #EAF0CC; --sub: #769636; --line: #B5D334; --ink: #1F2A12; --muted: #5b6152; --paper: #F6F7F2; --card: #fff; --hair: #E3E7D9; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: Pretendard, "Pretendard Variable", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; }
+  [hidden] { display: none !important; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 32px 20px 64px; }
+  .hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .hero h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  .hero h1:focus { outline: none; }
+  .hero p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+  .hero-right { display: flex; align-items: center; gap: 14px; }
+  .count { font-size: 14px; color: var(--muted); }
+  .count b { color: var(--sub); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; padding: 0 18px; border: 1.5px solid var(--hair); border-radius: 12px; background: #fff; color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; }
+  .btn:hover { border-color: var(--line); }
+  .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--key); }
+  .btn.primary:hover { border-color: var(--line); box-shadow: 0 0 0 3px rgba(181,211,52,.35); }
+  a:focus-visible, button:focus-visible, select:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(181,211,52,.5); }
+  .notice { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 14px; padding: 12px 16px; background: var(--key); border: 1.5px solid var(--line); border-radius: 14px; font-size: 14px; line-height: 1.55; }
+  .notice b { color: var(--sub); }
+  .search { position: relative; margin: 8px 0 14px; }
+  .search input { width: 100%; height: 56px; padding: 0 20px 0 52px; border: 1.5px solid var(--hair); border-radius: 16px; background: #fff; font: inherit; font-size: 17px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s; }
+  .search input:focus { border-color: var(--line); box-shadow: 0 0 0 3px rgba(181,211,52,.25); }
+  .search svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+  .bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 560px; }
+  .chip { height: 38px; padding: 0 16px; border: 1.5px solid var(--hair); border-radius: 999px; background: #fff; color: var(--ink); font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+  .chip:hover { border-color: var(--line); }
+  .chip[aria-pressed="true"] { background: var(--key); border-color: var(--line); }
+  .chip small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .sort { display: inline-flex; flex: none; border: 1.5px solid var(--hair); border-radius: 999px; background: #fff; padding: 3px; }
+  .sort button { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .sort button:hover { color: var(--ink); }
+  .sort button[aria-pressed="true"] { background: var(--key); color: var(--ink); }
+
+  /* 게시판 목록 */
+  .board { background: var(--card); border: 1.5px solid var(--hair); border-radius: 16px; overflow: hidden; }
+  .board ul { list-style: none; margin: 0; padding: 0; }
+  .row { display: grid; grid-template-columns: 56px 128px minmax(0, 1fr) 92px 150px 92px; grid-template-areas: "num cat title badge author date"; gap: 12px; align-items: center; padding: 14px 18px; border-top: 1px solid var(--hair); color: inherit; text-decoration: none; }
+  .board li:first-child .row { border-top: 0; }
+  a.row { cursor: pointer; transition: background .15s; }
+  a.row:hover { background: #FAFBF5; box-shadow: inset 3px 0 0 var(--line); }
+  a.row:focus-visible { box-shadow: inset 0 0 0 3px var(--line); }
+  .row.th { background: #FAFBF5; font-size: 13px; font-weight: 700; color: var(--muted); padding-top: 11px; padding-bottom: 11px; }
+  .c-num { grid-area: num; font-size: 13.5px; color: var(--muted); text-align: center; }
+  .c-cat { grid-area: cat; }
+  .c-title { grid-area: title; min-width: 0; }
+  .c-badge { grid-area: badge; }
+  .c-author { grid-area: author; font-size: 13.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .c-date { grid-area: date; font-size: 13.5px; color: var(--muted); text-align: right; }
+  .row.th .c-title { padding-left: 0; }
+  .t-main { display: block; font-size: 16px; font-weight: 800; line-height: 1.45; word-break: keep-all; overflow-wrap: anywhere; }
+  .t-sub { display: block; margin-top: 3px; font-size: 13.5px; color: var(--muted); line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .t-kind { margin-left: 6px; vertical-align: 2px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--sub); background: var(--key); padding: 4px 9px; border-radius: 999px; white-space: nowrap; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 8px; white-space: nowrap; border: 1.5px solid; }
+  .badge.ok { color: var(--ink); background: var(--key); border-color: var(--line); }
+  .badge.part { color: var(--sub); background: #fff; border-color: var(--line); border-style: dashed; }
+  .badge.no { color: var(--ink); background: #fff; border-color: var(--ink); }
+  .kind { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 2px 7px; border-radius: 6px; white-space: nowrap; }
+  .kind.real { background: var(--ink); color: var(--key); }
+  .kind.example { background: #fff; color: var(--muted); border: 1px solid var(--hair); }
+  mark { background: var(--key); color: inherit; border-radius: 3px; padding: 0 1px; }
+  .empty { padding: 48px 16px; text-align: center; color: var(--muted); font-size: 15px; }
+  .note { margin-top: 28px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+  .src { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+
+  /* 상세 */
+  .topnav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .post { max-width: 860px; margin: 0 auto; }
+  .paper { background: var(--card); border: 1.5px solid var(--hair); border-radius: 16px; padding: 26px 28px; }
+  .meta-top { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .post h2 { margin: 12px 0 8px; font-size: 25px; font-weight: 800; line-height: 1.4; letter-spacing: -.3px; word-break: keep-all; overflow-wrap: anywhere; }
+  .post h2:focus { outline: none; }
+  .byline { font-size: 14px; color: var(--muted); padding-bottom: 16px; border-bottom: 1px solid var(--hair); }
+  .byline b { color: var(--ink); }
+  .sec { margin-top: 22px; }
+  .sec h3 { margin: 0 0 8px; font-size: 15px; font-weight: 800; color: var(--sub); }
+  .sec p { margin: 0 0 8px; font-size: 15.5px; line-height: 1.7; color: #3a4131; overflow-wrap: anywhere; }
+  .issue { margin: 0 0 10px; padding: 10px 14px; border-left: 3px solid var(--line); background: #FAFBF5; border-radius: 0 10px 10px 0; font-size: 15px; line-height: 1.7; color: #3a4131; overflow-wrap: anywhere; }
+  .result { padding: 14px 16px; background: var(--key); border: 1.5px solid var(--line); border-radius: 12px; }
+  .result p { margin: 0; font-weight: 700; color: var(--ink); }
+  .result p + p { margin-top: 4px; }
+  .points { margin: 0; padding: 0; list-style: none; counter-reset: pt; }
+  .points li { position: relative; padding: 10px 0 10px 40px; border-top: 1px dashed var(--hair); font-size: 15px; line-height: 1.65; color: #3a4131; counter-increment: pt; overflow-wrap: anywhere; }
+  .points li:first-child { border-top: 0; }
+  .points li::before { content: counter(pt); position: absolute; left: 0; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: var(--key); color: var(--sub); font-weight: 800; font-size: 13.5px; display: flex; align-items: center; justify-content: center; }
+  .oneline { margin-top: 24px; padding: 16px 18px; border-left: 4px solid var(--line); background: #FAFBF5; border-radius: 0 12px 12px 0; font-size: 17px; font-weight: 800; line-height: 1.55; }
+  .oneline small { display: block; font-size: 12.5px; color: var(--sub); margin-bottom: 4px; }
+  .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .pn a, .pn span { display: block; padding: 14px 16px; background: #fff; border: 1.5px solid var(--hair); border-radius: 14px; color: inherit; text-decoration: none; min-width: 0; }
+  .pn a { cursor: pointer; }
+  .pn a:hover { border-color: var(--line); }
+  .pn span { color: var(--muted); }
+  .pn small { display: block; font-size: 12.5px; font-weight: 700; color: var(--sub); margin-bottom: 4px; }
+  .pn em { display: block; font-style: normal; font-size: 14.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pn .next { text-align: right; }
+
+  /* 글쓰기 */
+  .form { display: grid; gap: 16px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field label, .field .lab { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 800; }
+  .field label i, .field .lab i { font-style: normal; color: var(--sub); }
+  .field .help { margin: -2px 0 6px; font-size: 12.5px; color: var(--muted); }
+  .field input[type=text], .field select, .field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--hair); border-radius: 12px; background: #fff; font: inherit; font-size: 15px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s; }
+  .field select { height: 46px; cursor: pointer; }
+  .field textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--line); box-shadow: 0 0 0 3px rgba(181,211,52,.25); }
+  .field.bad input, .field.bad select, .field.bad textarea { border-color: var(--ink); }
+  .err { margin-top: 5px; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .radios { display: flex; gap: 8px; flex-wrap: wrap; }
+  .radios label { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 1.5px solid var(--hair); border-radius: 999px; background: #fff; font-size: 14px; font-weight: 700; cursor: pointer; margin: 0; }
+  .radios label:hover { border-color: var(--line); }
+  .radios input { accent-color: #769636; margin: 0; }
+  .radios label:has(input:checked) { background: var(--key); border-color: var(--line); }
+  .actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+  .local { margin-bottom: 14px; }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 20px 16px 48px; }
+    .hero h1 { font-size: 24px; }
+    .hero-right { width: 100%; justify-content: space-between; }
+    .chips { flex-basis: 100%; }
+    .row.th { display: none; }
+    .row { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "cat badge" "title title" "author date"; gap: 8px; padding: 14px 16px; }
+    .c-num { display: none; }
+    .c-badge { justify-self: end; }
+    .t-sub { white-space: normal; }
+    .paper { padding: 20px 18px; }
+    .post h2 { font-size: 21px; }
+    .two { grid-template-columns: 1fr; }
+    .pn { grid-template-columns: 1fr; }
+    .pn .next { text-align: left; }
+  }
+.hot{position:relative;display:block;margin:4px 0 16px;padding:22px 24px;border:2px solid #B5D334;border-radius:20px;background:#EAF0CC;color:#1F2A12;text-decoration:none;transition:box-shadow .15s,transform .15s}
+.hot:hover,.hot:focus-visible{box-shadow:0 8px 24px rgba(31,42,18,.12);transform:translateY(-1px);outline:none}
+.hot-label{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:#769636;color:#fff;font-size:13px;font-weight:800;letter-spacing:.04em}
+.hot-cat{margin-left:6px;font-size:12.5px;font-weight:700;color:#769636}
+.hot h2{margin:12px 0 6px;font-size:24px;font-weight:800;line-height:1.35;letter-spacing:-.3px}
+.hot-line{margin:0;font-size:15.5px;font-weight:700;color:#3a4131}
+.hot-res{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.hot-res span{padding:7px 12px;border-radius:12px;background:#fff;border:1.5px solid #B5D334;font-size:14px;font-weight:800}
+.hot-go{position:absolute;right:22px;bottom:20px;font-size:14.5px;font-weight:800;color:#769636}
+@media (max-width:600px){.hot{padding:18px 16px 46px}.hot h2{font-size:19px}.hot-go{right:16px;bottom:14px}}
+/* HOT 배너 새 디자인 (2026-11-13): 왼쪽 제목·요약 / 오른쪽 판결 결과 카드, 제목 줄바꿈은 낱말 단위·균형 */
+.hot{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:stretch;padding:26px 28px;border:2px solid #B5D334;border-radius:22px;background:#EAF0CC}
+.hot-main{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.hot-main .hot-label{align-self:flex-start}
+.hot h2{margin:14px 0 8px;font-size:26px;line-height:1.38;word-break:keep-all;overflow-wrap:break-word;text-wrap:balance}
+.hot-line{font-size:16px;line-height:1.55;word-break:keep-all;text-wrap:pretty;color:#3a4131}
+.hot-side{display:flex;flex-direction:column;gap:12px;padding:18px 20px;border-radius:16px;background:#fff;border:1.5px solid #B5D334}
+.hot-side-t{margin:0;font-size:13px;font-weight:800;letter-spacing:.06em;color:#769636}
+.hot .hot-res{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.hot .hot-res li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:#F6F7F2;font-size:15px;font-weight:700;color:#1F2A12;word-break:keep-all}
+.hot .hot-res li b{flex:none;padding:3px 10px;border-radius:999px;background:#769636;color:#fff;font-size:13px;font-weight:800}
+.hot .hot-go{position:static;margin-top:auto;display:flex;align-items:center;justify-content:center;height:44px;border-radius:12px;background:#769636;color:#fff;font-size:15px;font-weight:800}
+.hot:hover .hot-go,.hot:focus-visible .hot-go{box-shadow:0 0 0 2px #B5D334}
+.hot-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px}.hot-top .hot-cat{margin-left:0}
+.hot .hot-res li span{padding:0;border:0;border-radius:0;background:none;font-size:15px;font-weight:700}
+/* HOT 왼쪽 칸: 위(라벨) · 가운데(제목) · 아래(핵심 한 줄)로 오른쪽 카드 높이에 맞춰 나눠 배치 (2026-11-13) */
+.hot-main{justify-content:space-between !important;gap:18px;padding:4px 0}
+.hot h2{margin:0 !important;font-size:28px;line-height:1.4}
+.hot-line{margin:0 !important;display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid #B5D334;font-size:15.5px}
+.hot-line::before{content:'핵심';flex:none;margin-top:1px;padding:1px 8px;border-radius:999px;background:#769636;color:#fff;font-size:12px;font-weight:800;line-height:1.7}
+@media (max-width:860px){.hot{grid-template-columns:1fr;gap:16px;padding:20px 18px}.hot h2{font-size:21px}.hot-main{gap:14px}}
+#chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#chips::-webkit-scrollbar{display:none}#chips .chip{flex:0 0 auto;padding:0 14px}
+/* 상황 웹툰 (결과 직전까지만) */
+.toon{margin:18px 0 0}
+.toon-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tp{display:flex;flex-direction:column;min-width:0;margin:0;padding:8px 8px 0;background:#FAFBF5;border:1.5px solid #E3E7D9;border-radius:16px;overflow:hidden;box-shadow:0 2px 0 #E3E7D9}
+.tp.last{background:#EAF0CC;border-color:#B5D334;box-shadow:0 2px 0 #B5D334}
+.tp-cap{align-self:flex-start;max-width:100%;padding:2px 8px;border-radius:999px;background:#769636;color:#fff;font-size:11px;font-weight:800;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-say{display:flex;flex:1 0 auto;flex-direction:column;justify-content:flex-end;gap:7px;margin:8px 0 2px}
+.bub{position:relative;margin:0;padding:5px 9px;background:#fff;border:1.5px solid #1F2A12;border-radius:12px;font-size:12px;font-weight:700;line-height:1.4;color:#1F2A12;word-break:keep-all;overflow-wrap:anywhere}
+.bub::after{content:"";position:absolute;bottom:-5.5px;left:20px;width:8px;height:8px;background:#fff;border-right:1.5px solid #1F2A12;border-bottom:1.5px solid #1F2A12;transform:rotate(45deg)}
+.bub.l{margin-right:10%}
+.bub.r{margin-left:10%}.bub.r::after{left:auto;right:20px}
+.bub.c::after{left:calc(50% - 4px)}
+.bub.nar{border:1.5px dashed #B5D334;border-radius:8px;color:#5b6152}.bub.nar::after{display:none}
+.bub.q{margin-right:6%;border-color:#769636;font-weight:800}.bub.q::after{border-color:#769636}
+.tp-art{display:block;width:100%;height:auto;margin-top:auto;overflow:visible}
+.tp-art text{font-family:inherit}
+.tp-img{aspect-ratio:180/88;object-fit:cover;margin:2px 0 8px;border-radius:10px;border:1.5px solid #E3E7D9;background:#fff}
+.tp.last .tp-img{border-color:#B5D334}
+.hot-toon{display:none}
+@media (min-width:1000px){.hot.has-toon{padding-right:500px;min-height:178px}.hot.has-toon h2{word-break:keep-all}.hot-toon{position:absolute;right:22px;top:20px;display:grid;grid-template-columns:repeat(4,110px);gap:6px}.ht{position:relative;padding:20px 3px 0;background:#fff;border:1.5px solid #B5D334;border-radius:12px;overflow:hidden}.ht.last{background:#F6F7F2}.ht span{position:absolute;left:5px;top:4px;padding:0 6px;border-radius:999px;background:#769636;color:#fff;font-size:10px;font-weight:800;line-height:1.6}.ht .tp-art{margin:0}.ht .tp-img{margin:0 0 3px;border:0;border-radius:8px}.hot.has-toon .hot-go{bottom:16px}}
+.toon-next{margin:10px 0 0;font-size:14px;font-weight:800;color:#769636;text-align:center}
+@media (max-width:600px){.toon-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.tp{padding:7px 7px 0}.bub{font-size:11.5px;padding:5px 8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 목록 -->
+  <section id="v-list" aria-labelledby="h-list">
+    <header class="hero">
+      <div>
+        <h1 id="h-list" tabindex="-1">알면 받는 보상 사례</h1>
+        <p>헷갈리는 상황, 알고 보면 받을 수 있는 보상 이야기</p>
+      </div>
+      <div class="hero-right">
+        <div class="count" id="count" aria-live="polite"></div>
+      </div>
+    </header>
+    <div id="hot"></div>
+    <div class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="제목·내용으로 검색하세요 (예: 고지의무, 소멸시효, 후유장해)" autocomplete="off" aria-label="사례 검색">
+    </div>
+    <div class="bar">
+      <div class="chips" id="chips" role="toolbar" aria-label="카테고리"></div>
+      <div class="sort" role="group" aria-label="정렬">
+        <button type="button" data-sort="new" aria-pressed="true">최신순</button>
+        <button type="button" data-sort="views" aria-pressed="false">조회순</button>
+      </div>
+    </div>
+    <div class="board" id="board"></div>
+    <p class="src" id="src"></p>
+  </section>
+
+  <!-- 상세 -->
+  <section id="v-post" hidden></section>
+
+  <!-- 글쓰기 -->
+  <section id="v-write" hidden aria-labelledby="h-write">
+    <div class="post">
+      <div class="topnav"><a class="btn" href="#/">← 목록으로</a></div>
+      <div class="paper">
+        <h2 id="h-write" tabindex="-1" style="margin-top:0">사례 올리기</h2>
+        <p class="byline" style="margin:0 0 18px">비슷한 상황의 고객을 돕는 설계사들을 위해 사례를 정리해 주세요. 고객 이름·연락처 등 개인정보는 쓰지 마세요. <i style="font-style:normal;color:var(--sub)">*</i> 표시는 필수입니다.</p>
+        <div class="notice local" id="local-note" hidden><span aria-hidden="true">💾</span><div><b>이 브라우저에만 저장됨</b> · 서버에 연결되지 않아 이 기기의 브라우저에만 저장됩니다. 다른 사람에게는 보이지 않아요.</div></div>
+        <form class="form" id="form" novalidate>
+          <div class="two">
+            <div class="field"><label for="f-category">카테고리 <i>*</i></label><select id="f-category" name="category" required></select></div>
+            <div class="field"><label for="f-outcome">결과 배지 <i>*</i></label><select id="f-outcome" name="outcome" required><option value="">선택하세요</option><option>지급 인정</option><option>일부 지급</option><option>지급 거절</option></select></div>
+          </div>
+          <div class="field"><label for="f-title">제목 <i>*</i></label><input type="text" id="f-title" name="title" maxlength="80" placeholder="예: 고지의무 위반으로 해지됐는데, 진단비는 받을 수 있을까?" required></div>
+          <div class="two">
+            <div class="field"><label for="f-author">작성자 (이름 + 직함) <i>*</i></label><input type="text" id="f-author" name="author" maxlength="40" placeholder="예: 홍길동 손해사정사" required></div>
+            <div class="field"><span class="lab" id="l-kind">구분 <i>*</i></span>
+              <div class="radios" role="radiogroup" aria-labelledby="l-kind">
+                <label><input type="radio" name="kind" value="real"> 실제 판결 요약</label>
+                <label><input type="radio" name="kind" value="example" checked> 예시 사례</label>
+              </div>
+            </div>
+          </div>
+          <div class="field"><label for="f-summary">사건 개요 <i>*</i></label><textarea id="f-summary" name="summary" placeholder="언제, 어떤 이력이 있었고, 무엇을 청구했는지 정리해 주세요." required></textarea></div>
+          <div class="field"><label for="f-insurerResponse">보험사 대응 <i>*</i></label><textarea id="f-insurerResponse" name="insurerResponse" required></textarea></div>
+          <div class="field"><label for="f-judgment">판단 <i>*</i></label><p class="help" id="h-judgment">쟁점이 여러 개면 한 줄에 하나씩 쓰세요. 예: ① 계약 해지의 적법성 — …</p><textarea id="f-judgment" name="judgment" aria-describedby="h-judgment" required></textarea></div>
+          <div class="field"><label for="f-result">결과 <i>*</i></label><p class="help" id="h-result">예: 계약 해지 → 인정 / 진단비 지급책임 → 인정 (금액)</p><textarea id="f-result" name="result" style="min-height:80px" aria-describedby="h-result" required></textarea></div>
+          <div class="field"><label for="f-importance">왜 중요한가 <i>*</i></label><textarea id="f-importance" name="importance" style="min-height:80px" required></textarea></div>
+          <div class="field"><label for="f-points">실무 포인트 <i>*</i></label><p class="help" id="h-points">한 줄에 하나씩 쓰면 번호가 붙어요. (고객에게 물어볼 질문, 확인할 서류, 약관에서 볼 문구, 거절 시 대응)</p><textarea id="f-points" name="points" aria-describedby="h-points" required></textarea></div>
+          <div class="field"><label for="f-oneLine">오늘의 핵심 한 줄 <i>*</i></label><input type="text" id="f-oneLine" name="oneLine" maxlength="100" required></div>
+          <div class="actions"><a class="btn" href="#/">취소</a><button class="btn primary" type="submit" id="submit">사례 등록</button></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">게시된 사례는 상담 참고용 요약입니다. 실제 보험금 지급 여부와 금액은 개별 계약의 약관·사실관계·관련 법령과 보험사 심사, 분쟁조정·법원 판단에 따라 달라질 수 있습니다.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var API = '/api/cases';
+  var LS_POSTS = 'minroot:cases';
+  var LS_VIEWS = 'minroot:caseviews';
+  var CATS = ['고지의무', '진단비·암', '실손의료', '상해·후유장해', '소멸시효·미청구', '계약 해지·부활', '약관 해석'];
+  var OUTCOMES = ['지급 인정', '일부 지급', '지급 거절'];
+
+  // 시드 사례: seed-1만 실제 판결 요약, 나머지는 가상의 예시 사례
+  var SEED = [
+    { id: 'seed-1', category: '고지의무', kind: 'real', outcome: '지급 인정', author: '○○○ 손해사정사', createdAt: '2026-11-10T09:00:00+09:00',
+      title: '고지의무 위반으로 해지됐는데, 암진단비는 받을 수 있을까?',
+      summary: '2014년 흉부 CT에서 약 0.8cm 크기의 폐결절이 발견돼, 이후 해마다 CT로 경과를 지켜봤습니다. 2018년에는 폐렴으로 4일간 입원 치료를 받았습니다.\n2020년 3월 건강보험에 가입하면서 청약서의 추가검사·입원·수술·계속 치료 관련 질문에 모두 「아니오」로 답했습니다.\n가입 약 1년 2개월 뒤인 2021년 5월 폐암 진단을 받고 암진단비 5,000만 원을 청구했습니다.',
+      insurerResponse: '폐결절 추적검사와 폐렴 입원 사실을 알리지 않은 것은 계약 전 알릴 의무 위반이라고 보고 계약을 해지했습니다. 또 과거 폐결절이 이번 폐암과 관련됐을 가능성이 있다며 진단비 지급도 거절했습니다.',
+      judgment: '① 계약 해지의 적법성 — 정기적인 CT 추적검사와 입원 이력은 청약서 질문에 해당하는 중요한 사항이므로, 이를 알리지 않은 것은 고지의무 위반이고 보험사의 계약 해지는 적법하다고 봤습니다.\n② 보험금 지급책임(인과관계) — 과거 결절은 왼쪽 폐 아래쪽(좌하엽), 폐암은 왼쪽 폐 위쪽(좌상엽)에 생겨 위치가 달랐습니다. 과거 결절은 양성 종양인 폐과오종으로 확인됐고, 진료기록 감정에서도 두 병변은 임상적으로 관련이 없다는 의견이 나왔습니다. 폐렴 역시 폐암의 원인이나 위험인자로 인정되지 않았습니다.\n③ 입증책임 — 약관상 알리지 않은 사실이 보험금 지급사유 발생에 영향을 미쳤다는 점은 보험사가 증명해야 하는데, 이를 증명하지 못했으므로 인과관계가 부정됐습니다.',
+      result: '계약 해지 → 인정\n암진단비 지급책임 → 인정 (5,000만 원 + 지연손해금 지급)',
+      importance: '고지의무 위반이 확인되면 계약 해지와 보험금 거절이 함께 따라온다고 생각하기 쉽습니다. 하지만 해지와 지급책임은 별개의 문제이며, 알리지 않은 사실과 보험사고 사이에 인과관계가 없으면 계약이 해지되더라도 이미 발생한 사고의 보험금은 지급될 수 있습니다.',
+      points: ['가입 상담 때 「최근 몇 년 사이 CT·MRI를 찍었거나 정기적으로 추적검사를 받은 적이 있는지」를 따로 꼭 물어보세요.', '거절 건이라면 과거 영상판독지·수술기록지·병리조직검사 결과지를 받아, 과거 병변과 현재 질환의 위치·성격을 비교하세요.', '약관의 「계약 전 알릴 의무 위반의 효과」 조항에서 인과관계와 입증책임(보험사가 증명) 문구를 확인하세요.', '고지의무 위반으로 거절되면 「해지가 적법한가」와 「보험금 지급을 거절할 수 있는가」를 반드시 나눠서 검토하세요.'],
+      oneLine: '고지의무 위반은 인정됐지만, 보험금 지급책임까지 사라진 것은 아니었다.' },
+
+    { id: 'seed-2', category: '고지의무', kind: 'example', outcome: '지급 인정', author: '△△△ 손해사정사', createdAt: '2026-10-28T10:00:00+09:00',
+      title: '건강검진 「재검 권고」를 안 알렸다면 고지의무 위반일까?',
+      summary: '가입 5개월 전 건강검진에서 간 수치 이상으로 재검사를 권고받았지만, 실제로 재검사는 받지 않았습니다.\n이후 간 질환으로 입원해 입원·수술비를 청구했습니다.',
+      insurerResponse: '검진 이상 소견을 알리지 않았다며 고지의무 위반으로 계약 해지를 통보하고 보험금 지급을 거절했습니다.',
+      judgment: '① 질문 해당 여부 — 청약서는 「최근 3개월 이내 질병 의심 소견」과 「최근 1년 이내 추가검사(재검사)를 받은 사실」을 물었습니다. 검진은 3개월보다 앞선 시점이었고 재검사는 실제로 받지 않았으므로 질문에 해당하지 않는다고 볼 여지가 컸습니다.\n② 해지·거절의 정당성 — 질문에 해당하지 않는 사실은 알릴 의무의 대상이 아니므로 해지와 지급 거절 모두 받아들여지기 어렵다고 정리했습니다.',
+      result: '계약 해지 → 철회\n입원·수술비 → 지급 (예시: 약 300만 원)',
+      importance: '고지의무는 「보험사가 서면으로 물어본 사항」에 답하는 의무입니다. 질문의 기간과 문구를 정확히 읽는 것만으로 결과가 달라질 수 있습니다.',
+      points: ['고객에게 검진 날짜, 재검 권고 여부, 실제 재검 여부를 날짜까지 확인하세요.', '검진 결과지와 청약서(질문 문항 원문)를 나란히 놓고 비교하세요.', '질문의 기간(3개월·1년·5년)과 「받은 사실」인지 「권유받은 사실」인지 구분해서 읽으세요.', '해지 통보를 받으면 질문 문항 해당 여부부터 짚는 이의 신청을 준비하세요.'],
+      oneLine: '고지의무는 「물어본 것」에 답하는 의무, 질문 문구가 기준이다.' },
+
+    { id: 'seed-3', category: '고지의무', kind: 'example', outcome: '일부 지급', author: '□□□ 손해사정사', createdAt: '2026-09-15T14:00:00+09:00',
+      title: '설계사에게 말로만 알린 병력, 고지한 것으로 볼 수 있을까?',
+      summary: '고혈압 약을 먹고 있다고 설계사에게 말했지만, 전자청약 질문에는 「아니오」로 체크했습니다. 고객은 설계사가 「괜찮다」고 했다고 주장합니다.\n가입 1년 뒤 뇌경색으로 진단비를 청구했습니다.',
+      insurerResponse: '청약서에 고혈압 투약 사실이 없으므로 고지의무 위반으로 해지하고, 고혈압이 뇌경색의 위험인자라며 지급을 거절했습니다.',
+      judgment: '① 고지 수령 권한 — 일반적으로 보험설계사에게는 고지를 받을 권한이 없다고 보므로, 설계사에게 말한 것만으로는 보험사에 알린 것으로 인정되기 어렵습니다.\n② 인과관계 — 고혈압은 뇌경색의 대표적 위험인자여서 인과관계가 부정되기 어렵습니다.\n③ 모집 과정 책임 — 다만 설계사가 사실과 다르게 답하도록 유도했다면 보험사가 모집 과정의 잘못에 대해 별도로 손해배상 책임을 질 수 있고, 고객의 과실 정도에 따라 금액이 조정될 수 있습니다.',
+      result: '계약 해지·진단비 거절 → 유지\n모집 과정 손해배상 → 일부 인정 (예시: 진단비의 일부 수준)',
+      importance: '「설계사에게 말했다」는 주장은 현장에서 가장 자주 나오지만 그 자체로는 고지로 인정되기 어렵습니다. 반대로 설계사의 부적절한 안내는 보험사와 설계사 모두의 책임으로 돌아옵니다.',
+      points: ['고객이 말한 병력이 청약서 질문 답변에 그대로 반영됐는지 함께 확인하세요.', '분쟁 시 상담 기록·메시지·녹취 등 당시 안내 내용을 확보하세요.', '청약서와 약관의 「계약 전 알릴 의무」 안내(설계사에게 말한 것은 고지가 아님)를 고객과 함께 읽으세요.', '거절되면 보험금 청구와 별개로 모집 과정 책임(손해배상)을 다툴 수 있는지 검토하세요.'],
+      oneLine: '설계사에게 한 말은 고지가 아니다, 청약서에 남아야 고지다.' },
+
+    { id: 'seed-4', category: '진단비·암', kind: 'example', outcome: '일부 지급', author: '◇◇◇ 손해사정사', createdAt: '2026-10-20T11:00:00+09:00',
+      title: '경계성 종양 진단, 일반암 진단비를 받을 수 있을까?',
+      summary: '난소 혹 제거 수술 후 조직검사에서 「경계성 종양」으로 판정받았습니다.\n고객은 일반암 진단비 3,000만 원을 청구했습니다.',
+      insurerResponse: '경계성 종양은 약관상 일반암이 아니라며 일반암의 20%에 해당하는 금액만 지급하겠다고 안내했습니다.',
+      judgment: '① 질병 분류 — 병리 결과지의 종양 형태 분류(행동양식 코드)가 경계성으로 기재돼 있었고, 약관은 이 분류를 기준으로 일반암과 경계성 종양을 나눴습니다.\n② 재판정 가능성 — 추가 병리 판독에서도 악성 소견이 확인되지 않아 분류를 바꿀 근거는 없었습니다.',
+      result: '일반암 진단비 → 불인정\n경계성 종양 진단비 → 지급 (예시: 600만 원)',
+      importance: '암 진단비 분쟁의 상당수는 「어떤 암으로 분류되느냐」에서 생깁니다. 진단서 코드와 병리 결과지가 금액을 좌우합니다.',
+      points: ['고객에게 진단서뿐 아니라 병리조직검사 결과지를 꼭 받아 두라고 안내하세요.', '결과지의 형태 분류(악성·경계성·제자리)를 확인하세요.', '약관의 「암」「유사암」「경계성 종양」 정의 조항과 분류표를 확인하세요.', '분류에 이견이 있으면 다른 병리 전문의의 재판독을 요청하는 방법을 검토하세요.'],
+      oneLine: '암 진단비는 진단명보다 병리 결과지의 분류가 좌우한다.' },
+
+    { id: 'seed-5', category: '진단비·암', kind: 'example', outcome: '지급 거절', author: '○○○ 손해사정사', createdAt: '2026-08-30T15:00:00+09:00',
+      title: '갑상선암이 림프절로 전이됐다면 일반암일까?',
+      summary: '갑상선암 수술 중 주변 림프절 전이가 확인됐습니다.\n고객은 유사암 진단비를 받은 뒤, 전이암은 일반암이라며 차액을 추가로 청구했습니다.',
+      insurerResponse: '약관상 전이암은 처음 생긴 부위(원발부위) 기준으로 분류한다는 조항을 근거로 추가 지급을 거절했습니다.',
+      judgment: '① 약관 조항 — 약관에 「원발부위 기준으로 분류」한다는 문구가 명시돼 있었고, 설명이 부족했다고 볼 만한 사정도 확인되지 않았습니다.\n② 결론 — 원발부위가 갑상선이므로 유사암으로 보는 보험사 판단이 약관에 맞다고 정리했습니다. 다만 이런 조항이 없는 예전 약관이라면 결론이 달라질 수 있습니다.',
+      result: '일반암 차액 청구 → 불인정 (유사암 진단비만 지급)',
+      importance: '가입 시기에 따라 같은 진단도 결과가 달라지는 대표 사례입니다. 약관 버전 확인이 출발점입니다.',
+      points: ['고객 계약의 가입 시기와 그 시기 약관을 먼저 확인하세요.', '진단서와 병리 결과지에서 원발부위와 전이 부위를 구분해 보세요.', '약관의 「원발부위 기준」 조항이 있는지 확인하세요.', '조항이 없는 약관이라면 설명의무와 함께 일반암 지급을 다툴 여지가 있는지 검토하세요.'],
+      oneLine: '전이암 분쟁은 약관에 「원발부위 기준」 문구가 있는지부터 본다.' },
+
+    { id: 'seed-6', category: '진단비·암', kind: 'example', outcome: '일부 지급', author: '△△△ 손해사정사', createdAt: '2026-07-22T10:30:00+09:00',
+      title: '가입 91일째 암 확정, 진단일은 검사일일까 결과일일까?',
+      summary: '가입 85일째 조직검사를 받았고, 결과는 가입 91일째에 나왔습니다.\n계약에는 90일 면책기간과 1년 감액기간(50%)이 있었습니다.',
+      insurerResponse: '처음에는 검사일을 기준으로 면책기간 중 진단이라며 지급을 거절했습니다.',
+      judgment: '① 진단 확정일 — 일반적으로 암 진단 확정일은 조직검사를 한 날이 아니라 병리 결과가 나와 진단이 확정된 날로 봅니다.\n② 감액 적용 — 확정일이 면책기간 이후이므로 지급 대상이지만, 1년 감액기간 안이라 가입금액의 50%가 적용됩니다.',
+      result: '면책 거절 → 철회\n암진단비 → 50% 지급 (예시: 1,500만 원)',
+      importance: '면책·감액기간 경계에서는 날짜 하루가 결과를 바꿉니다. 「진단 확정일」의 기준을 정확히 아는 것이 중요합니다.',
+      points: ['고객에게 검사일, 결과 통보일, 진단서 발급일을 각각 확인하세요.', '병리 결과지의 보고일(판독일)을 확인하세요.', '약관의 면책기간·감액기간 기산일과 「진단 확정」 정의를 확인하세요.', '면책으로 거절되면 확정일 기준으로 다시 계산해 이의를 제기하세요.'],
+      oneLine: '면책·감액 계산은 검사한 날이 아니라 진단이 확정된 날부터.' },
+
+    { id: 'seed-7', category: '실손의료', kind: 'example', outcome: '일부 지급', author: '□□□ 손해사정사', createdAt: '2026-11-03T13:00:00+09:00',
+      title: '실손보험 2개 가입, 병원비를 두 번 받을 수 있을까?',
+      summary: '고객은 개인 실손 2건에 가입돼 있었고, 입원 치료비 400만 원이 나왔습니다.\n두 보험사에 각각 400만 원씩 청구했습니다.',
+      insurerResponse: '두 보험사는 실제 낸 병원비 안에서 나눠 지급하는 비례보상을 적용해, 합쳐서 자기부담금을 뺀 금액만 지급했습니다.',
+      judgment: '① 실손의 성격 — 실손의료보험은 실제 손해를 보상하는 보험이라 여러 개 가입해도 실제 부담한 의료비를 넘어 받을 수 없습니다.\n② 정산 방식 — 각 계약의 보상 책임 비율로 나눠 지급하는 방식이 약관에 따른 정상 처리였습니다.',
+      result: '중복 지급 → 불인정\n비례보상 → 지급 (예시: 합계 약 360만 원)',
+      importance: '실손 중복가입은 보험료만 이중으로 내는 구조가 될 수 있습니다. 보장분석에서 가장 먼저 짚어 줄 부분입니다.',
+      points: ['고객에게 회사 단체 실손이 따로 있는지 꼭 물어보세요.', '가입 내역 조회로 실손 중복 여부를 확인하세요.', '약관의 다수보험 처리(비례보상) 조항을 확인하세요.', '단체 실손이 있다면 개인 실손 중지 제도를 함께 안내하세요.'],
+      oneLine: '실손은 여러 개 들어도 낸 병원비 이상은 돌려받지 못한다.' },
+
+    { id: 'seed-8', category: '실손의료', kind: 'example', outcome: '지급 인정', author: '◇◇◇ 손해사정사', createdAt: '2026-10-05T16:00:00+09:00',
+      title: '3일 입원, 보험사는 「통원으로 충분했다」는데?',
+      summary: '어지럼증으로 응급실을 찾은 고객이 주치의 판단으로 3일간 입원해 검사를 받았습니다.\n입원 의료비를 청구했습니다.',
+      insurerResponse: '의료자문 결과 통원 치료로 충분했다며 입원 의료비가 아닌 통원 한도로만 지급하겠다고 했습니다.',
+      judgment: '① 입원 필요성 — 입원이 적정했는지는 진료 당시 주치의 판단, 증상 정도, 간호기록 등을 종합해 봅니다.\n② 자문의 의미 — 진료기록만 본 의료자문은 참고 자료일 뿐이며, 이 예시에서는 낙상 위험과 지속 관찰 필요성이 기록에 남아 있어 입원 필요성이 인정됐습니다.',
+      result: '통원 한도 지급 → 철회\n입원 의료비 → 지급 (예시: 약 150만 원)',
+      importance: '「의료자문 결과」라는 말에 고객이 그대로 수긍하는 경우가 많습니다. 자문은 판단 근거 중 하나일 뿐 결론이 아닙니다.',
+      points: ['고객에게 입원 당시 증상과 의사가 입원을 권한 이유를 물어보세요.', '주치의 소견서, 간호기록지, 검사 결과지를 확보하세요.', '약관의 「입원」 정의(의사가 필요하다고 인정해 입원실에 체류)를 확인하세요.', '의료자문 동의서는 내용을 이해한 뒤 서명하도록 안내하고, 결과에 이견이 있으면 제3의료기관 판단을 요청하세요.'],
+      oneLine: '의료자문은 참고일 뿐, 입원 필요성은 진료 당시 기록이 말해 준다.' },
+
+    { id: 'seed-9', category: '실손의료', kind: 'example', outcome: '일부 지급', author: '○○○ 손해사정사', createdAt: '2026-06-18T09:30:00+09:00',
+      title: '도수치료 60회, 실손에서 전부 나올까?',
+      summary: '허리 통증으로 1년 동안 도수치료를 60회 받았습니다.\n고객은 비급여 항목을 특약으로 나눈 실손에 가입돼 있었고, 전체 비용을 청구했습니다.',
+      insurerResponse: '약관의 비급여 도수치료 연간 횟수·금액 한도와 치료 효과 확인 조건을 들어 일부만 지급했습니다.',
+      judgment: '① 한도 적용 — 해당 실손은 도수치료를 비급여 특약으로 나누고 연간 횟수와 금액 한도를 두고 있었습니다.\n② 효과 확인 — 일정 횟수마다 증상 개선이 확인돼야 계속 보장되는데, 기록상 개선 소견이 있는 범위까지만 지급 대상으로 봤습니다.',
+      result: '한도 안의 치료비 → 지급 (예시: 약 300만 원)\n한도 초과분 → 불인정',
+      importance: '실손은 가입 시기(세대)에 따라 비급여 보장 방식이 크게 다릅니다. 같은 치료라도 결과가 달라집니다.',
+      points: ['고객의 실손 가입 시기(세대)를 먼저 확인하세요.', '치료 횟수, 영수증, 진료비 세부내역서, 경과 기록을 모으세요.', '약관의 비급여 특약 연간 한도와 「효과 확인」 조건을 확인하세요.', '한도를 넘기기 전에 고객에게 남은 한도를 미리 알려 주세요.'],
+      oneLine: '비급여 실손은 「몇 세대 실손인가」에서 답이 갈린다.' },
+
+    { id: 'seed-10', category: '상해·후유장해', kind: 'example', outcome: '지급 인정', author: '△△△ 손해사정사', createdAt: '2026-09-28T11:00:00+09:00',
+      title: '후유장해 지급률, 보험사 자문의 판정이 끝일까?',
+      summary: '교통사고로 무릎 인대를 다쳐 수술 후 운동 제한이 남았습니다. 주치의는 장해율 20%로 진단했습니다.\n상해 후유장해 보험금(가입금액 1억 원)을 청구했습니다.',
+      insurerResponse: '보험사 자문의는 장해율 10%가 적정하다고 판단해 1,000만 원만 지급하겠다고 했습니다.',
+      judgment: '① 장해 평가 — 주치의와 자문의의 측정 결과가 달라 다툼이 생겼습니다.\n② 제3의료기관 판정 — 약관에 따라 양측이 합의한 제3의료기관에서 다시 평가했고 장해율 15%가 나왔습니다.',
+      result: '장해율 10% → 15%로 조정\n후유장해 보험금 → 1,500만 원 지급 (예시: 500만 원 추가)',
+      importance: '후유장해는 측정 방법과 시점에 따라 결과가 크게 달라지는 영역입니다. 약관에 정한 이의 절차를 알면 고객 손실을 줄일 수 있습니다.',
+      points: ['고객에게 치료 종결 시점과 지금 불편한 동작을 구체적으로 물어보세요.', '장해진단서, 측정 기록(관절 각도 등), 영상 자료를 확보하세요.', '약관의 장해분류표와 「제3자 의료기관 판정」 조항을 확인하세요.', '지급률에 이견이 있으면 바로 합의하지 말고 제3의료기관 판정을 요청하세요.'],
+      oneLine: '후유장해는 첫 판정이 끝이 아니다, 제3의료기관 판정 절차를 기억하자.' },
+
+    { id: 'seed-11', category: '상해·후유장해', kind: 'example', outcome: '일부 지급', author: '□□□ 손해사정사', createdAt: '2026-08-12T14:30:00+09:00',
+      title: '「원래 있던 디스크」라며 50% 깎인 보험금, 정당할까?',
+      summary: '넘어지면서 허리를 다쳐 수술을 받은 50대 고객의 후유장해 청구 건입니다.\n영상에 나이에 따른 퇴행성 변화가 함께 보였습니다.',
+      insurerResponse: '기존 퇴행성 질환(기왕증)이 장해에 50% 기여했다며 보험금을 절반으로 줄였습니다.',
+      judgment: '① 감액 근거 — 약관에 기왕증 기여도만큼 빼는 조항이 있어 감액 자체는 가능했습니다.\n② 기여도 수준 — 사고 전 치료 이력이 거의 없고, 나이를 고려한 일반적인 퇴행 정도라는 의견이 나와 기여도를 30%로 조정했습니다.',
+      result: '기여도 50% → 30%로 조정\n후유장해 보험금 → 70% 지급 (예시: 1,400만 원)',
+      importance: '기왕증 감액은 비율 자체가 다툼의 핵심입니다. 사고 전 치료 이력이 없다는 사실이 강력한 근거가 됩니다.',
+      points: ['고객에게 사고 전 같은 부위로 치료받은 적이 있는지 확인하세요.', '사고 전후 진료 기록과 건강보험 진료 내역을 확보하세요.', '약관의 기왕증 감액 조항과 적용되는 보장을 확인하세요.', '감액률이 과하다고 보이면 근거 자료를 모아 재심사를 요청하세요.'],
+      oneLine: '기왕증 감액은 「있느냐」보다 「얼마나 기여했느냐」의 싸움이다.' },
+
+    { id: 'seed-12', category: '상해·후유장해', kind: 'example', outcome: '일부 지급', author: '◇◇◇ 손해사정사', createdAt: '2026-07-08T10:00:00+09:00',
+      title: '사무직에서 현장직으로, 직업 변경을 안 알렸다면?',
+      summary: '사무직으로 상해보험에 가입한 고객이 2년 뒤 건설 현장 일로 직업을 바꿨지만 보험사에 알리지 않았습니다.\n현장에서 다쳐 상해 보험금 1,000만 원을 청구했습니다.',
+      insurerResponse: '계약 후 알릴 의무(통지의무) 위반이라며 보험금 감액을 통보했습니다.',
+      judgment: '① 통지의무 위반 — 직업이 위험도가 높은 쪽으로 바뀌면 보험사에 알려야 하는데 이를 하지 않았습니다.\n② 감액 방식 — 이런 경우 약관에 따라 변경 전후 직업의 보험료 비율만큼 보험금을 줄여 지급하는 방식이 적용됩니다.',
+      result: '전액 지급 → 불인정\n보험료 비율에 따른 삭감 지급 (예시: 600만 원)',
+      importance: '가입 후에도 직업·운전 여부의 변화는 알려야 합니다. 정기적인 고객 관리 연락에서 꼭 챙겨야 할 항목입니다.',
+      points: ['정기 연락 때 「요즘 하시는 일이 바뀌셨나요?」를 꼭 물어보세요.', '재직증명서 등으로 사고 당시 직업을 확인하세요.', '약관의 「계약 후 알릴 의무」와 위반 시 감액 방식을 확인하세요.', '직업이 바뀐 고객은 즉시 변경 신청을 도와 불이익을 예방하세요.'],
+      oneLine: '가입 후 직업이 바뀌면 바로 알려야 보험금이 깎이지 않는다.' },
+
+    { id: 'seed-13', category: '소멸시효·미청구', kind: 'example', outcome: '일부 지급', author: '○○○ 손해사정사', createdAt: '2026-10-14T15:30:00+09:00',
+      title: '3년 넘게 잊고 있던 수술비, 정말 청구가 안 될까?',
+      summary: '보장분석 상담 중, 3년 2개월 전 받은 수술의 수술비를 청구하지 않은 사실을 발견했습니다.\n같은 질환으로 최근 2년 동안 통원 치료도 계속 받았습니다.',
+      insurerResponse: '수술비는 소멸시효가 지났다며 거절하고, 통원 치료비는 지급하겠다고 안내했습니다.',
+      judgment: '① 소멸시효 — 보험금 청구권은 일반적으로 보험사고가 발생한 때부터 3년이 지나면 소멸합니다. 수술일로부터 3년이 넘어 수술비 청구권은 소멸했다고 봤습니다.\n② 회차별 판단 — 통원 치료는 진료일마다 따로 시효를 계산하므로, 최근 3년 안의 통원분은 지급 대상입니다.',
+      result: '수술비 → 시효 소멸로 불인정\n최근 3년 이내 통원 의료비 → 지급 (예시: 약 90만 원)',
+      importance: '미청구 보험금은 「언제 발견하느냐」가 전부입니다. 보장분석 때 과거 진료 이력을 함께 보는 습관이 고객의 돈을 지킵니다.',
+      points: ['상담 때 「최근 3년 사이 수술·입원·통원하신 적 있나요?」를 물어보세요.', '건강보험 진료 내역을 조회해 날짜별로 정리하세요.', '약관의 보험금 청구권 소멸시효 조항과 지급사유 발생일 기준을 확인하세요.', '3년이 다가오는 건은 서류가 덜 갖춰져도 우선 청구부터 접수하세요.'],
+      oneLine: '미청구 보험금은 3년이 지나기 전에 찾아야 내 돈이다.' },
+
+    { id: 'seed-14', category: '소멸시효·미청구', kind: 'example', outcome: '지급 인정', author: '△△△ 손해사정사', createdAt: '2026-06-02T11:30:00+09:00',
+      title: '청구는 했는데 보험사가 「검토 중」, 그사이 3년이 지났다면?',
+      summary: '고객은 사고 2년 차에 보험금을 청구했고, 보험사는 추가 조사가 필요하다며 오래 결론을 내지 않았습니다.\n그사이 사고일로부터 3년이 지났습니다.',
+      insurerResponse: '결국 지급을 거절하면서, 이제는 소멸시효도 지났다고 주장했습니다.',
+      judgment: '① 청구의 효력 — 보험금 청구는 시효 진행을 멈추게 하는 「최고」에 해당할 수 있습니다.\n② 회신 대기 기간 — 보험사가 검토 중이라며 답을 미룬 경우, 시효 중단을 위한 후속 조치 기간을 보험사가 결과를 회신한 때부터 계산한다는 법리가 일반적으로 논의됩니다. 이 예시에서는 회신을 받은 뒤 곧바로 소송을 제기해 시효 주장이 받아들여지지 않았습니다.',
+      result: '시효 소멸 주장 → 불인정\n보험금 → 지급 (예시: 500만 원)',
+      importance: '청구 후 보험사의 결론이 늦어지면 고객이 포기하는 경우가 많습니다. 회신 시점과 후속 조치 기한을 관리하는 것이 핵심입니다.',
+      points: ['고객에게 처음 청구한 날과 보험사 연락 이력을 정리하게 하세요.', '청구 접수증, 보험사 안내 문자·공문을 모두 보관하세요.', '약관의 소멸시효 조항과 보험금 지급 기한(조사 연장 안내) 조항을 확인하세요.', '거절 회신을 받으면 기한 안에 민원·분쟁조정·소송 등 다음 단계를 바로 검토하세요.'],
+      oneLine: '청구 이력과 회신 날짜를 남겨 두면 시효 다툼에서 고객을 지킬 수 있다.' },
+
+    { id: 'seed-15', category: '계약 해지·부활', kind: 'example', outcome: '지급 인정', author: '□□□ 손해사정사', createdAt: '2026-09-03T10:00:00+09:00',
+      title: '실효된 보험을 부활시켰다면, 고지의무도 다시 생길까?',
+      summary: '보험료 미납으로 실효된 계약을 부활시키면서, 고객은 그사이 받은 위염 치료를 알리지 않았습니다.\n부활 1년 뒤 교통사고로 골절 수술을 받아 보험금을 청구했습니다.',
+      insurerResponse: '부활 청약 때 위염 치료를 알리지 않았다며 부활 계약 해지와 지급 거절을 통보했습니다.',
+      judgment: '① 부활 시 알릴 의무 — 부활할 때도 새로 가입할 때처럼 알릴 의무가 다시 적용되므로 위반 자체는 인정됐습니다.\n② 인과관계 — 위염과 교통사고로 인한 골절은 관련이 없어, 알리지 않은 사실이 보험사고에 영향을 주지 않았습니다.',
+      result: '부활 계약 해지 → 인정\n골절 수술비 → 지급 (예시: 약 200만 원)',
+      importance: '부활은 「원래 계약을 되살리는 것」이라 알릴 의무가 없다고 오해하기 쉽습니다. 부활 때도 새 가입처럼 꼼꼼히 알리도록 안내해야 합니다.',
+      points: ['부활 상담 때 실효 기간 동안의 병원 이용 이력을 물어보세요.', '부활 청약서의 질문 항목과 답변 내용을 확인하세요.', '약관의 「보험계약의 부활」 조항과 알릴 의무 준용 문구를 확인하세요.', '해지 통보를 받아도 사고와 무관한 위반이면 보험금 지급은 따로 다투세요.'],
+      oneLine: '부활도 새 가입처럼 알려야 한다, 다만 무관한 사고는 보장된다.' },
+
+    { id: 'seed-16', category: '계약 해지·부활', kind: 'example', outcome: '지급 인정', author: '◇◇◇ 손해사정사', createdAt: '2026-07-30T13:30:00+09:00',
+      title: '보험료 2개월 미납, 실효 안내를 못 받았다면?',
+      summary: '자동이체 계좌가 바뀌면서 보험료가 2개월 빠졌고, 그사이 계약은 실효 처리됐습니다.\n고객은 실효 상태에서 입원해 보험금을 청구했습니다.',
+      insurerResponse: '보험료 미납으로 이미 실효된 계약이라며 지급을 거절했습니다.',
+      judgment: '① 납입최고 절차 — 보험사는 계약을 해지하기 전에 납입을 독촉하고 해지 예정 사실을 알려야 하며, 그 방법은 약관에 정해져 있습니다.\n② 통지의 효력 — 안내가 변경 전 주소로만 발송돼 고객에게 도달했다고 보기 어려웠고, 실효 처리의 효력을 인정하기 어렵다고 봤습니다.',
+      result: '실효 처리 → 효력 불인정\n입원 보험금 → 지급 (예시: 미납 보험료 공제 후 약 250만 원)',
+      importance: '실효는 정해진 안내 절차를 거쳐야 효력이 생깁니다. 고객 연락처·주소 관리가 곧 계약 관리입니다.',
+      points: ['고객의 연락처·주소·계좌가 바뀌면 바로 보험사에 반영하도록 도우세요.', '보험사가 보낸 납입최고 안내의 발송일·방법·주소를 확인하세요.', '약관의 보험료 연체 시 납입최고와 계약 해지 조항을 확인하세요.', '실효 상태의 사고라도 안내 절차에 문제가 있으면 바로 포기하지 말고 검토하세요.'],
+      oneLine: '실효는 미납만으로 끝나지 않는다, 안내 절차까지 지켜졌는지 보자.' },
+
+    { id: 'seed-17', category: '약관 해석', kind: 'example', outcome: '지급 인정', author: '○○○ 손해사정사', createdAt: '2026-08-21T09:00:00+09:00',
+      title: '내시경으로 한 시술, 약관상 「수술」일까?',
+      summary: '고객은 대장 용종을 내시경으로 떼어 내고 수술비를 청구했습니다.\n오래전 가입한 상품이라 약관의 수술 정의가 요즘 상품과 달랐습니다.',
+      insurerResponse: '약관의 수술은 절개가 필요한 치료만을 뜻한다며 지급을 거절했습니다.',
+      judgment: '① 약관 문구 — 해당 약관은 수술을 「기구를 사용해 생체에 절단·절제 등의 조작을 가하는 것」으로 정의했고, 절개 여부는 따로 정하지 않았습니다.\n② 해석 원칙 — 약관의 뜻이 분명하지 않으면 작성자인 보험사에 불리하게, 고객에게 유리하게 해석한다는 원칙(작성자 불리의 원칙)이 적용됐습니다.',
+      result: '수술비 → 지급 (예시: 50만 원)',
+      importance: '같은 치료라도 약관의 정의 문구에 따라 결론이 달라집니다. 「안 된다」는 답을 들으면 약관 원문부터 확인하는 습관이 중요합니다.',
+      points: ['고객에게 받은 치료의 정확한 명칭과 방법을 확인하세요.', '수술확인서(수술명·수술 코드)를 받아 두세요.', '가입 당시 약관의 「수술」 정의 조항 원문을 확인하세요.', '문구가 모호하면 작성자 불리의 원칙을 근거로 재심사를 요청하세요.'],
+      oneLine: '애매한 약관 문구는 고객에게 유리하게 해석된다.' },
+
+    { id: 'seed-18', category: '약관 해석', kind: 'example', outcome: '일부 지급', author: '△△△ 손해사정사', createdAt: '2026-06-25T16:00:00+09:00',
+      title: '퇴원 후 다시 입원했다면, 입원일당 한도는 새로 시작될까?',
+      summary: '고객은 같은 질병으로 120일 입원했다가 퇴원했고, 두 달 뒤 다시 60일 입원했습니다.\n계약의 입원일당은 한 번의 입원에 최대 120일까지 지급하는 조건이었습니다.',
+      insurerResponse: '두 입원을 하나의 계속 입원으로 보고, 이미 한도를 채웠다며 두 번째 입원의 일당을 거절했습니다.',
+      judgment: '① 계속 입원 조항 — 약관에는 같은 질병으로 퇴원한 뒤 정해진 기간 안에 다시 입원하면 하나의 입원으로 본다는 문구가 있었습니다.\n② 적용 결과 — 재입원이 그 기간 안이었고 첫 입원에서 120일 한도를 모두 써서, 입원일당 추가 지급은 어렵다고 봤습니다. 다만 실손 의료비는 별도 보장이라 지급 대상이었습니다.',
+      result: '두 번째 입원일당 → 불인정\n두 번째 입원 실손 의료비 → 지급 (예시: 약 200만 원)',
+      importance: '장기 입원 고객은 「계속 입원」 기준을 몰라 기대와 다른 결과를 겪는 경우가 많습니다. 정액 보장과 실손 보장을 나눠서 설명해야 합니다.',
+      points: ['고객에게 퇴원일·재입원일과 진단명이 같은지 확인하세요.', '입·퇴원 확인서와 진단서를 회차별로 정리하세요.', '약관의 「계속 입원」「동일 질병」 정의와 지급 한도 조항을 확인하세요.', '정액 보장이 거절돼도 실손 등 다른 보장으로 청구할 수 있는지 함께 확인하세요.'],
+      oneLine: '재입원은 「같은 병인가, 며칠 만인가」에 따라 한도가 갈린다.' }
+  ];
+
+  // ---------- 유틸 ----------
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var reEsc = function (s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+  function hl(text, q) {
+    text = String(text == null ? '' : text);
+    if (!q) return esc(text);
+    var re = new RegExp(reEsc(q), 'gi'), out = '', last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (!m[0].length) { re.lastIndex++; continue; }
+      out += esc(text.slice(last, m.index)) + '<mark>' + esc(m[0]) + '</mark>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(text.slice(last));
+  }
+  function lines(s) { return String(s || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean); }
+  function fmtDate(iso) { var d = new Date(iso); if (isNaN(d)) return ''; var p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '.' + p(d.getMonth() + 1) + '.' + p(d.getDate()); }
+  function lsGet(k, def) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function outcomeOf(p) {
+    if (OUTCOMES.indexOf(p.outcome) >= 0) return p.outcome;
+    var r = String(p.result || '');
+    if (/일부|감액|삭감|비례|조정/.test(r)) return '일부 지급';
+    if (/지급/.test(r) && !/불인정|거절/.test(r.split('\n').pop())) return '지급 인정';
+    return /거절|불인정/.test(r) ? '지급 거절' : '일부 지급';
+  }
+  function badge(p) { var o = outcomeOf(p); return '<span class="badge ' + (o === '지급 인정' ? 'ok' : o === '지급 거절' ? 'no' : 'part') + '">' + o + '</span>'; }
+  function kindLabel(p) { return p.kind === 'real' ? '<span class="kind real">실제 판결 요약</span>' : '<span class="kind example">예시 사례</span>'; }
+  function normalize(p) {
+    if (!p || typeof p !== 'object' || !p.id || !p.title) return null;
+    var pts = Array.isArray(p.points) ? p.points : lines(p.points);
+    return { id: String(p.id), category: CATS.indexOf(p.category) >= 0 ? p.category : (p.category || '기타'), title: String(p.title), author: p.author || '익명', kind: p.kind === 'real' ? 'real' : 'example', outcome: p.outcome, summary: p.summary || '', insurerResponse: p.insurerResponse || '', judgment: p.judgment || '', result: p.result || '', importance: p.importance || '', points: pts.map(String), oneLine: p.oneLine || '', createdAt: p.createdAt || new Date(0).toISOString() };
+  }
+
+  // ---------- 상태 ----------
+  var state = { q: '', cat: 'all', sort: 'new', online: false, loaded: false };
+  var posts = [];
+  var views = lsGet(LS_VIEWS, {});
+  var lastFocusId = null, lastCounted = null;
+
+  function setPosts(extra) {
+    var seen = {}, all = [];
+    extra.concat(SEED).forEach(function (p) { var n = normalize(p); if (n && !seen[n.id]) { seen[n.id] = 1; all.push(n); } });
+    all.sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+    all.forEach(function (p, i) { p.num = i + 1; });   // 위에서부터 1, 2, 3 …
+    posts = all;
+  }
+  function textOf(p) { return [p.title, p.summary, p.insurerResponse, p.judgment, p.result, p.importance, p.points.join(' '), p.oneLine, p.category, p.author].join(' ').toLowerCase(); }
+  function filtered() {
+    var ql = state.q.trim().toLowerCase();
+    var list = posts.filter(function (p) { return (state.cat === 'all' || p.category === state.cat) && (!ql || textOf(p).indexOf(ql) >= 0); });
+    if (state.sort === 'views') list = list.slice().sort(function (a, b) { return (views[b.id] || 0) - (views[a.id] || 0) || a.num - b.num; });
+    return list;
+  }
+
+  // ---------- 목록 ----------
+  function renderChips() {
+    var keys = ['all'].concat(CATS);
+    $('#chips').innerHTML = keys.map(function (k) {
+      var n = k === 'all' ? posts.length : posts.filter(function (p) { return p.category === k; }).length;
+      return '<button type="button" class="chip" data-cat="' + esc(k) + '" aria-pressed="' + (state.cat === k) + '">' + (k === 'all' ? '전체' : esc(k)) + '</button>';
+    }).join('');
+  }
+  // ---------- 상황 웹툰: 결과 직전(궁금해지는 지점)까지만 보여 줌 ----------
+  // 색: 키 #EAF0CC · 서브 #769636 · 라인 #B5D334 + 글씨/바탕색, 피부·머리는 부드러운 중간톤. 빨강은 「거절」 도장에만.
+  var TK = { key: '#EAF0CC', sub: '#769636', line: '#B5D334', ink: '#1F2A12', hair: '#E3E7D9', muted: '#5b6152', skin: '#F6E3D3', cheek: '#F0CDB8', dark: '#3A3A3A', stamp: '#A65A4E' };
+  var K = ' stroke="#1F2A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+  var KL = ' fill="none" stroke="#1F2A12" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
+  function shadow(cx, cy, rx) { return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="3.5" fill="#1F2A12" opacity=".1"/>'; }
+  function face(e) {
+    var dot = '<circle cx="-7" cy="49" r="2.3" fill="#1F2A12"/><circle cx="7" cy="49" r="2.3" fill="#1F2A12"/>';
+    var drop = '<path d="M21 37q3.5 5 0 7.5q-3.5-2.5 0-7.5z" fill="#fff" stroke="' + TK.sub + '" stroke-width="1.4"/>';
+    var s = '<ellipse cx="-11.5" cy="55.5" rx="3.6" ry="2.2" fill="' + TK.cheek + '"/><ellipse cx="11.5" cy="55.5" rx="3.6" ry="2.2" fill="' + TK.cheek + '"/>';
+    switch (e) {
+      case 'smile': return s + '<path d="M-10 50q3-4 6 0M4 50q3-4 6 0"' + KL + '/><path d="M-4 55q4 4 8 0"' + KL + '/>';
+      case 'worry': return s + dot + '<path d="M-11 43l5-2M11 43l-5-2"' + KL + '/><path d="M-4 58q2-2 4 0t4 0"' + KL + '/>' + drop;
+      case 'sad': return s + dot + '<path d="M-11 43l5-2M11 43l-5-2"' + KL + '/><path d="M-4 58q4-3 8 0"' + KL + '/>';
+      case 'shock': return s + '<circle cx="-7" cy="48.5" r="3.4" fill="#fff" stroke="#1F2A12" stroke-width="1.5"/><circle cx="7" cy="48.5" r="3.4" fill="#fff" stroke="#1F2A12" stroke-width="1.5"/><circle cx="-7" cy="49" r="1.5" fill="#1F2A12"/><circle cx="7" cy="49" r="1.5" fill="#1F2A12"/><ellipse cx="0" cy="57.5" rx="2.6" ry="3.2" fill="#1F2A12"/>' + drop;
+      case 'hurt': return s + '<path d="M-10 46l5 3-5 3M10 46l-5 3 5 3"' + KL + '/><path d="M-4 57.5q2-2 4 0t4 0"' + KL + '/>' + drop;
+      case 'stern': return s + dot + '<path d="M-11 41l6 2M11 41l-6 2"' + KL + '/><path d="M-3.5 57h7"' + KL + '/>';
+      case 'think': return s + '<circle cx="-5" cy="47" r="2.3" fill="#1F2A12"/><circle cx="9" cy="47" r="2.3" fill="#1F2A12"/><path d="M-1 57q3-1.5 6 0"' + KL + '/>';
+      default: return s + dot + '<path d="M-3.5 55.5q3.5 2.5 7 0"' + KL + '/>';
+    }
+  }
+  var HAIR = {
+    c: 'M-19.5 50C-21 33-9 27.5 1 28.5C12 28 21 35 19.5 50C16 41 9 37.5 3 39.5C-3 36-13 40-19.5 50Z',
+    p: 'M-19.5 50C-21 33-9 27.5 1 28.5C12 28 21 35 19.5 50C16 41 9 37.5 3 39.5C-3 36-13 40-19.5 50Z',
+    i: 'M-19 45C-19 31-9 28 0 28C9 28 19 31 19 45C14 37 6 35-2 36C-9 36-15 39-19 45Z',
+    d: 'M-19 46C-19 31-9 28 0 28C10 28 19 32 19 46C15 38 8 36 0 37C-8 36-15 39-19 46Z'
+  };
+  // 머리(얼굴) — 중심 (0,48), 반지름 19
+  function head(role, e, o) {
+    o = o || {};
+    var g = role === 'p' ? '<circle cx="15" cy="31" r="7.5" fill="' + TK.dark + '"' + K + '/>' : '';
+    g += '<circle cx="0" cy="48" r="19" fill="' + TK.skin + '"' + K + '/>';
+    g += '<path d="' + HAIR[role] + '" fill="' + (role === 'd' ? TK.muted : TK.dark) + '"' + K + '/>';
+    g += '<ellipse cx="-7" cy="34.5" rx="5" ry="2.4" fill="#fff" opacity=".3"/>';
+    if (role === 'p') g += '<rect x="7" y="33" width="8" height="4.5" rx="2.2" fill="' + TK.line + '" stroke="#1F2A12" stroke-width="1.2"/>';
+    g += face(e);
+    if (role === 'i') g += '<g fill="none" stroke="#1F2A12" stroke-width="1.6"><circle cx="-7" cy="49" r="5.2"/><circle cx="7" cy="49" r="5.2"/><path d="M-1.8 49h3.6"/></g>';
+    if (role === 'd') g += '<path d="M-17 40q5-9 17-10" fill="none" stroke="' + TK.hair + '" stroke-width="2.4" stroke-linecap="round"/><circle cx="-10" cy="34" r="5.5" fill="#fff" stroke="#1F2A12" stroke-width="1.6"/><circle cx="-10" cy="34" r="2.2" fill="' + TK.key + '"/>';
+    if (o.hat === 'helmet') g += '<path d="M-20 40a20 17 0 0 1 40 0z" fill="' + TK.key + '"' + K + '/><path d="M0 24v8" stroke="' + TK.sub + '" stroke-width="2.5" stroke-linecap="round"/><rect x="-23" y="37.5" width="46" height="5.5" rx="2.75" fill="' + TK.line + '"' + K + '/>';
+    return g;
+  }
+  // 캐릭터: c 고객 · p 설계사 · i 보험사 직원 · d 의사 / x = 발 위치, 바닥 y=98
+  function C(role, x, e, o) {
+    o = o || {};
+    var body = { c: TK.line, p: TK.sub, i: TK.ink, d: '#fff' }[role];
+    var arm = function (cx, cy, rot) { return '<ellipse cx="' + cx + '" cy="' + cy + '" rx="5" ry="8.5" transform="rotate(' + rot + ' ' + cx + ' ' + cy + ')" fill="' + body + '"' + K + '/>'; };
+    var g = shadow(0, 98.5, 22);
+    g += arm(-17, 80, 15);
+    g += o.arm === 'up' ? arm(20, 62, -150) : o.arm === 'hold' ? arm(21, 76, -65) : arm(17, 80, -15);
+    g += '<rect x="-17" y="66" width="34" height="32" rx="13" fill="' + body + '"' + K + '/>';
+    if (role === 'c') g += '<path d="M-6 67q6 5 12 0" fill="none" stroke="#1F2A12" stroke-width="1.6" stroke-linecap="round"/>';
+    if (role === 'p') g += '<path d="M-8 67l8 7 8-7" fill="#fff" stroke="#1F2A12" stroke-width="1.5" stroke-linejoin="round"/><rect x="4" y="80" width="8" height="6" rx="1.5" fill="' + TK.key + '"/>';
+    if (role === 'i') g += '<path d="M-7 67l7 10 7-10z" fill="#fff"/><path d="M0 70l-2.6 3.5 2.6 13 2.6-13z" fill="' + TK.line + '" stroke="#1F2A12" stroke-width="1.1" stroke-linejoin="round"/>';
+    if (role === 'd') g += '<path d="M0 69v28" stroke="' + TK.hair + '" stroke-width="1.6"/><path d="M-7 67c-3 9 0 15 6 16" fill="none" stroke="' + TK.sub + '" stroke-width="2" stroke-linecap="round"/><circle cx="-1" cy="83" r="2.6" fill="' + TK.sub + '"/><path d="M8 80h5M10.5 77.5v5" stroke="' + TK.sub + '" stroke-width="1.8" stroke-linecap="round"/>';
+    g += '<ellipse cx="-8" cy="73" rx="4" ry="2.4" fill="#fff" opacity=".35"/>';
+    if (o.band) g += '<rect x="-13" y="88" width="26" height="6" rx="3" fill="#fff" stroke="#1F2A12" stroke-width="1.5"/><path d="M-6 89v4M0 89v4M6 89v4" stroke="' + TK.hair + '" stroke-width="1.4"/>';
+    g += head(role, e, o);
+    var tf = 'translate(' + x + ' ' + (o.y || 0) + ')' + (o.flip ? ' scale(-1 1)' : '') + (o.rot ? ' rotate(' + o.rot + ' 0 98)' : '');
+    return '<g transform="' + tf + '">' + g + '</g>';
+  }
+  function txt(x, y, t, fs, fill) { return '<text x="' + x + '" y="' + y + '" font-size="' + fs + '" font-weight="900" text-anchor="middle" fill="' + (fill || TK.ink) + '">' + esc(t) + '</text>'; }
+  // 소품: 왼쪽 위 (x,y) 기준
+  var PROPS = {
+    ct: function (o) {
+      return '<rect width="46" height="34" rx="7" fill="' + TK.ink + '"/><rect x="4" y="4" width="38" height="26" rx="4" fill="' + TK.dark + '"/>' +
+        '<ellipse cx="16" cy="17" rx="7" ry="10" fill="' + TK.key + '"/><ellipse cx="30" cy="17" rx="7" ry="10" fill="' + TK.key + '"/>' +
+        (o.big ? '<circle cx="15" cy="13" r="3.8" fill="' + TK.sub + '"/><circle cx="15" cy="13" r="6" fill="none" stroke="' + TK.line + '" stroke-width="1.3"/>'
+               : '<circle cx="16" cy="22" r="1.8" fill="' + TK.sub + '"/><circle cx="16" cy="22" r="4.2" fill="none" stroke="' + TK.line + '" stroke-width="1.2"/>') +
+        '<rect x="19" y="34" width="8" height="5" fill="' + TK.ink + '"/><rect x="11" y="38" width="24" height="4" rx="2" fill="' + TK.ink + '"/>';
+    },
+    endo: function () {
+      return '<rect width="46" height="34" rx="7" fill="' + TK.ink + '"/><rect x="4" y="4" width="38" height="26" rx="4" fill="' + TK.dark + '"/>' +
+        '<circle cx="23" cy="17" r="10" fill="' + TK.key + '"/><circle cx="23" cy="17" r="5.5" fill="none" stroke="' + TK.line + '" stroke-width="1.5"/><circle cx="23" cy="17" r="2" fill="' + TK.sub + '" opacity=".5"/><circle cx="29.5" cy="11.5" r="2.8" fill="' + TK.sub + '"/>' +
+        '<rect x="19" y="34" width="8" height="5" fill="' + TK.ink + '"/><rect x="11" y="38" width="24" height="4" rx="2" fill="' + TK.ink + '"/>';
+    },
+    doc: function (o) {
+      var g = '<rect width="36" height="42" rx="5" fill="#fff"' + K + '/><path d="M7 9h22M7 15h22M7 21h14" stroke="' + TK.hair + '" stroke-width="2.4" stroke-linecap="round"/>';
+      if (o.check) g += '<rect x="5" y="28" width="7" height="7" rx="2" fill="' + TK.key + '" stroke="#1F2A12" stroke-width="1.3"/><path d="M6.5 31.5l2 2 3.5-4.5" fill="none" stroke="' + TK.sub + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+      if (o.t) g += txt(o.check ? 24 : 18, 35, o.t, o.fs || (o.check ? 7 : 8.5), o.check ? TK.ink : TK.sub);
+      return g;
+    },
+    stamp: function () {
+      return '<g transform="rotate(-12 21 10)"><rect x="1" y="1" width="40" height="19" rx="5" fill="#fff" stroke="' + TK.stamp + '" stroke-width="2.2"/><rect x="4" y="4" width="34" height="13" rx="3" fill="none" stroke="' + TK.stamp + '" stroke-width="1"/>' + txt(21, 14.6, '거절', 10, TK.stamp) + '</g>';
+    },
+    bed: function (o) {
+      return '<ellipse cx="38" cy="44.5" rx="36" ry="3.5" fill="#1F2A12" opacity=".1"/>' +
+        '<rect x="-2" y="2" width="9" height="42" rx="4" fill="' + TK.sub + '"' + K + '/>' +
+        '<path d="M10 36v8M68 36v8" stroke="#1F2A12" stroke-width="3" stroke-linecap="round"/>' +
+        '<rect x="4" y="22" width="70" height="14" rx="6" fill="#fff"' + K + '/>' +
+        '<ellipse cx="17" cy="21" rx="12" ry="5" fill="#fff"' + K + '/>' +
+        '<g transform="translate(17 -22.5) scale(.72)">' + head(o.who || 'c', o.e || 'neutral') + '</g>' +
+        '<rect x="27" y="13" width="48" height="16" rx="7" fill="' + TK.key + '"' + K + '/><path d="M34 19h10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>';
+    },
+    hospital: function () {
+      return shadow(30, 60, 30) + '<rect x="2" y="12" width="56" height="48" rx="7" fill="#fff"' + K + '/>' +
+        '<circle cx="30" cy="12" r="11" fill="' + TK.key + '"' + K + '/><path d="M27.5 5.5h5v4h4v5h-4v4h-5v-4h-4v-5h4z" fill="' + TK.sub + '"/>' +
+        '<rect x="9" y="28" width="11" height="9" rx="2.5" fill="' + TK.key + '" stroke="#1F2A12" stroke-width="1.4"/><rect x="40" y="28" width="11" height="9" rx="2.5" fill="' + TK.key + '" stroke="#1F2A12" stroke-width="1.4"/>' +
+        '<path d="M23 60V48a7 7 0 0 1 14 0v12" fill="' + TK.line + '"' + K + '/>';
+    },
+    cal: function (o) {
+      return '<rect y="3" width="38" height="38" rx="6" fill="#fff"' + K + '/><path d="M0 9a6 6 0 0 1 6-6h26a6 6 0 0 1 6 6v6H0z" fill="' + TK.sub + '"' + K + '/><path d="M10 0v7M28 0v7" stroke="#1F2A12" stroke-width="2.4" stroke-linecap="round"/>' + txt(19, 33, o.t, o.fs || 11);
+    },
+    phone: function () { return '<rect width="20" height="34" rx="5" fill="' + TK.ink + '"/><rect x="3" y="5" width="14" height="22" rx="2" fill="' + TK.key + '"/><path d="M6 11h8M6 16h5" stroke="' + TK.sub + '" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="30.5" r="1.5" fill="' + TK.hair + '"/>'; },
+    car: function () {
+      return '<ellipse cx="35" cy="37.5" rx="34" ry="3.5" fill="#1F2A12" opacity=".1"/>' +
+        '<path d="M3 31V21c0-4 3-6 6-7l8-2 7-7c2-2 4-3 7-3h14c3 0 5 1 7 3l6 7c5 1 8 3 8 8v11z" fill="' + TK.sub + '"' + K + '/>' +
+        '<path d="M23 12l6-6h7v6zM40 6h5l6 6H40z" fill="' + TK.key + '" stroke="#1F2A12" stroke-width="1.4" stroke-linejoin="round"/><circle cx="64" cy="21" r="2" fill="' + TK.key + '"/>' +
+        '<circle cx="17" cy="31" r="6.5" fill="' + TK.dark + '"' + K + '/><circle cx="17" cy="31" r="2.2" fill="' + TK.hair + '"/><circle cx="53" cy="31" r="6.5" fill="' + TK.dark + '"' + K + '/><circle cx="53" cy="31" r="2.2" fill="' + TK.hair + '"/>';
+    },
+    receipts: function (o) {
+      return '<rect x="8" y="0" width="28" height="36" rx="3" fill="#fff"' + K + ' transform="rotate(8 22 18)"/><rect x="3" y="4" width="28" height="36" rx="3" fill="#fff"' + K + ' transform="rotate(-6 17 22)"/>' +
+        '<rect x="5" y="6" width="28" height="36" rx="3" fill="#fff"' + K + '/><path d="M10 14h18M10 20h12" stroke="' + TK.hair + '" stroke-width="2.4" stroke-linecap="round"/>' + txt(19, 36, o.t || '₩', o.fs || 9, TK.sub);
+    },
+    money: function (o) { return '<rect width="38" height="25" rx="4" fill="' + TK.key + '"' + K + '/><path d="M3 4l16 10 16-10" fill="none" stroke="#1F2A12" stroke-width="1.5" stroke-linejoin="round"/>' + txt(19, 22, o.t || '₩', o.fs || 8, TK.sub); },
+    shield: function (o) { return '<path d="M15 1l14 5v11c0 10-6 17-14 20C7 34 1 27 1 17V6z" fill="' + TK.key + '"' + K + '/>' + txt(15, 24, o.t, 11, TK.sub); },
+    hourglass: function () {
+      return '<rect width="24" height="4.5" rx="2.2" fill="' + TK.sub + '"' + K + '/><rect y="29.5" width="24" height="4.5" rx="2.2" fill="' + TK.sub + '"' + K + '/>' +
+        '<path d="M4 4.5h16c0 8-6 9-6 12.5s6 4.5 6 12.5H4c0-8 6-9 6-12.5S4 12.5 4 4.5z" fill="#fff"' + K + '/><path d="M8 9h8l-4 5zM7 28h10l-5-5z" fill="' + TK.line + '"/>';
+    },
+    mag: function () { return '<circle cx="12" cy="12" r="9.5" fill="#fff" fill-opacity=".6" stroke="#1F2A12" stroke-width="2.6"/><path d="M19 19l8 8" stroke="#1F2A12" stroke-width="4" stroke-linecap="round"/><path d="M7 10a6 6 0 0 1 5-5" fill="none" stroke="' + TK.line + '" stroke-width="2" stroke-linecap="round"/>'; },
+    xray: function () {
+      var g = '<rect width="40" height="44" rx="6" fill="' + TK.dark + '"' + K + '/>';
+      for (var i = 0; i < 5; i++) g += '<rect x="13" y="' + (6 + i * 7) + '" width="14" height="5" rx="2.5" fill="' + (i === 3 ? TK.line : TK.key) + '"/>';
+      return g;
+    },
+    cone: function () { return '<path d="M10 2h6l7 24H3z" fill="' + TK.line + '"' + K + '/><path d="M7 13.5h12" stroke="#fff" stroke-width="3"/><rect y="25" width="26" height="5" rx="2" fill="' + TK.sub + '"' + K + '/>'; },
+    mail: function () { return '<path d="M-12 12h7M-14 19h9" stroke="' + TK.line + '" stroke-width="2.4" stroke-linecap="round"/><rect y="4" width="38" height="26" rx="4" fill="#fff"' + K + '/><path d="M3 8l16 11 16-11" fill="none" stroke="#1F2A12" stroke-width="1.6" stroke-linejoin="round"/>'; },
+    pill: function () { return '<g transform="rotate(-25 12 6)"><path d="M12 0h6.5a5.5 5.5 0 0 1 0 11H12z" fill="' + TK.sub + '"/><rect width="24" height="11" rx="5.5" fill="none"' + K + '/><path d="M12 0v11" stroke="#1F2A12" stroke-width="1.5"/></g>'; },
+    desk: function () {
+      return '<rect x="20" y="2" width="26" height="17" rx="3" fill="' + TK.dark + '"' + K + '/><rect x="23.5" y="5" width="19" height="11" rx="1.5" fill="' + TK.key + '"/><rect x="15" y="17" width="36" height="4" rx="2" fill="' + TK.hair + '"' + K + '/>' +
+        '<rect y="21" width="64" height="6" rx="3" fill="' + TK.sub + '"' + K + '/><path d="M8 27v13M56 27v13" stroke="#1F2A12" stroke-width="3" stroke-linecap="round"/>';
+    },
+    tablet: function () {
+      var g = '<rect width="34" height="44" rx="6" fill="' + TK.ink + '"/><rect x="4" y="5" width="26" height="32" rx="2.5" fill="#fff"/><circle cx="17" cy="40.5" r="1.5" fill="' + TK.hair + '"/>';
+      for (var i = 0; i < 3; i++) g += '<rect x="7" y="' + (9 + i * 9) + '" width="6" height="6" rx="1.5" fill="' + TK.key + '" stroke="#1F2A12" stroke-width="1.1"/><path d="M8 ' + (12 + i * 9) + 'l1.6 1.6 2.6-3.4" fill="none" stroke="' + TK.sub + '" stroke-width="1.5" stroke-linecap="round"/><path d="M16 ' + (12 + i * 9) + 'h10" stroke="' + TK.hair + '" stroke-width="2" stroke-linecap="round"/>';
+      return g;
+    },
+    mark: function (o) { return txt(0, 0, o.t, o.fs || 20, TK.sub); },
+    swirl: function () { return '<path d="M8 6c3-1 3-5 0-6S1 1 1 6s6 8 12 6 7-8 5-11" fill="none" stroke="' + TK.sub + '" stroke-width="2" stroke-linecap="round"/>'; },
+    pain: function () { return '<path d="M0 0l7-4M1 8h8M0 16l7 4" stroke="' + TK.sub + '" stroke-width="2.4" stroke-linecap="round"/>'; },
+    spark: function () { return '<path d="M7 0q1.2 5.8 7 7q-5.8 1.2-7 7q-1.2-5.8-7-7q5.8-1.2 7-7z" fill="' + TK.line + '" stroke="#1F2A12" stroke-width="1.2" stroke-linejoin="round"/>'; }
+  };
+  function P(name, x, y, o) { o = o || {}; return '<g transform="translate(' + x + ' ' + y + ')' + (o.s ? ' scale(' + o.s + ')' : '') + '">' + PROPS[name](o) + '</g>'; }
+  // 마지막 칸 공통: 걱정하는 고객 + 보험사 직원 + (거절 도장 | 안내문 숫자)
+  function LAST(o) {
+    o = o || {};
+    return [C('c', 38, 'worry', { band: o.band, hat: o.hat }), P('doc', 73, 56, { t: o.doc }), o.doc ? '' : P('stamp', 64, 68), C('i', 142, 'stern', { flip: 1 }), P('mark', 6, 42, { t: '?' })];
+  }
+  // 사례 id → 칸 목록. say: 'l|'(왼쪽 인물) 'r|'(오른쪽 인물) 'n|'(내레이션) 'q|'(궁금증) / 결과는 절대 넣지 않음
+  var TOONS = {
+    'seed-1': [
+      { cap: '2014 · 건강검진', say: ['r|작은 폐결절이 있네요. 추적 관찰만 하시면 돼요'], art: [C('c', 36, 'neutral'), P('ct', 64, 56), C('d', 142, 'smile', { flip: 1 })] },
+      { cap: '2020 · 보험 가입', say: ['l|추적검사·입원요? 전부 「아니오」!'], art: [C('c', 50, 'smile', { arm: 'hold' }), P('doc', 90, 56, { check: 1, t: '아니오' }), P('spark', 140, 44)] },
+      { cap: '2021 · 진단', say: ['r|검사 결과… 폐암입니다'], art: [C('c', 36, 'shock'), P('ct', 64, 56, { big: 1 }), C('d', 142, 'sad', { flip: 1 }), P('mark', 6, 40, { t: '!' })] },
+      { cap: '암진단비 청구', say: ['r|고지의무 위반이라 해지·지급 거절입니다', 'q|이거… 받을 수 있을까?'], art: LAST() }
+    ],
+    'seed-2': [
+      { cap: '가입 5개월 전', say: ['r|간 수치가 높네요. 재검 받아 보세요'], art: [C('c', 36, 'neutral'), P('doc', 70, 56, { t: '검진표' }), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '그 후', say: ['l|바빠서… 재검은 다음에 하지 뭐'], art: [C('c', 52, 'smile'), P('cal', 98, 58, { t: '재검?', fs: 10 }), P('mark', 150, 70, { t: '…' })] },
+      { cap: '가입 후 · 입원', say: ['n|간 질환으로 입원·수술', 'l|입원·수술비 청구해야지'], art: [P('bed', 26, 54, { e: 'neutral' }), P('doc', 128, 56, { t: '청구서' })] },
+      { cap: '보험사 통보', say: ['r|검진 이상 숨기셨죠? 해지·지급 거절!', 'q|재검은 안 받았는데… 받을 수 있을까?'], art: LAST() }
+    ],
+    'seed-3': [
+      { cap: '가입 상담', say: ['l|저 고혈압 약 먹고 있어요', 'r|아~ 괜찮아요!'], art: [C('c', 40, 'neutral'), P('pill', 76, 76), C('p', 140, 'smile', { flip: 1, arm: 'up' })] },
+      { cap: '전자청약', say: ['l|질문엔… 「아니오」 체크'], art: [C('c', 50, 'think', { arm: 'hold' }), P('tablet', 92, 54), P('mark', 140, 50, { t: '?' })] },
+      { cap: '1년 뒤', say: ['r|뇌경색입니다. 바로 치료해요'], art: [C('c', 36, 'shock'), P('doc', 70, 56, { t: '진단서' }), C('d', 142, 'sad', { flip: 1 }), P('mark', 6, 40, { t: '!' })] },
+      { cap: '진단비 청구', say: ['r|청약서엔 없던데요? 지급 거절입니다', 'q|설계사님께 말했는데… 받을 수 있을까?'], art: LAST() }
+    ],
+    'seed-4': [
+      { cap: '수술', say: ['r|난소 혹 제거 수술, 잘 끝났어요'], art: [P('bed', 22, 54, { e: 'smile' }), C('d', 142, 'smile', { flip: 1 })] },
+      { cap: '조직검사 결과', say: ['r|결과는 「경계성 종양」이에요'], art: [C('c', 36, 'think'), P('doc', 70, 56, { t: '병리' }), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '진단비 청구', say: ['l|종양이니까 일반암 진단비 3,000만 원!'], art: [C('c', 50, 'smile', { arm: 'up' }), P('money', 92, 73), P('spark', 140, 44), P('spark', 152, 70, { s: .7 })] },
+      { cap: '보험사 안내', say: ['r|경계성은 일반암이 아니에요. 20%만 드려요', 'q|이거… 다 받을 수 있을까?'], art: LAST({ doc: '20%' }) }
+    ],
+    'seed-5': [
+      { cap: '수술 중', say: ['r|갑상선암인데, 림프절까지 퍼졌네요'], art: [P('bed', 22, 54, { e: 'worry' }), C('d', 142, 'sad', { flip: 1 })] },
+      { cap: '1차 청구', say: ['l|유사암 진단비는 받았고…'], art: [C('c', 50, 'neutral'), P('money', 92, 73, { t: '유사암', fs: 7 }), P('spark', 140, 50)] },
+      { cap: '추가 청구', say: ['l|전이됐으면 일반암 아냐? 차액도 청구!'], art: [C('c', 50, 'think', { arm: 'hold' }), P('doc', 90, 56, { t: '청구서' }), P('mark', 142, 52, { t: '?' })] },
+      { cap: '보험사 답변', say: ['r|처음 생긴 곳 기준이라 추가 지급은 안 돼요', 'q|정말… 차액은 못 받을까?'], art: LAST() }
+    ],
+    'seed-6': [
+      { cap: '가입 85일째', say: ['r|조직검사 해 볼게요'], art: [C('c', 36, 'neutral'), P('cal', 71, 58, { t: '85일' }), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '가입 91일째', say: ['r|결과 나왔어요. 암입니다'], art: [C('c', 36, 'shock'), P('cal', 71, 58, { t: '91일' }), C('d', 142, 'sad', { flip: 1 })] },
+      { cap: '진단비 청구', say: ['l|면책기간 90일은 지났으니까…'], art: [C('c', 46, 'think'), P('cal', 86, 58, { t: '90일' }), P('doc', 134, 56, { t: '청구서' })] },
+      { cap: '보험사 답변', say: ['r|검사일이 면책기간이라 거절이에요', 'q|진단일, 언제로 봐야 할까?'], art: LAST() }
+    ],
+    'seed-7': [
+      { cap: '가입 현황', say: ['l|실손보험이 2개나 있어요!'], art: [C('c', 46, 'smile', { arm: 'up' }), P('shield', 96, 60, { t: 'A' }), P('shield', 134, 60, { t: 'B' })] },
+      { cap: '입원', say: ['n|입원 치료비가 400만 원 나왔어요'], art: [P('bed', 22, 54, { e: 'neutral' }), P('receipts', 124, 54, { t: '400' })] },
+      { cap: '청구', say: ['l|두 곳에 400만 원씩, 합쳐서 800만 원!'], art: [C('c', 44, 'smile', { arm: 'hold' }), P('shield', 96, 60, { t: 'A' }), P('shield', 134, 60, { t: 'B' })] },
+      { cap: '보험사 답변', say: ['r|실제 낸 병원비 안에서 나눠 드려요', 'q|두 번 다 받을 순 없을까?'], art: LAST({ doc: '비례' }) }
+    ],
+    'seed-8': [
+      { cap: '응급실', say: ['l|너무 어지러워요…'], art: [C('c', 48, 'hurt'), P('swirl', 64, 18), P('hospital', 108, 38)] },
+      { cap: '입원 3일', say: ['r|검사하게 3일 입원합시다'], art: [P('bed', 22, 54, { e: 'neutral' }), C('d', 146, 'neutral', { flip: 1 })] },
+      { cap: '청구', say: ['l|입원 의료비 청구합니다!'], art: [C('c', 46, 'smile', { arm: 'hold' }), P('doc', 86, 56, { t: '청구서' }), P('cal', 132, 58, { t: '3일' })] },
+      { cap: '보험사 답변', say: ['r|의료자문 결과, 통원으로 충분했대요', 'q|의사가 입원하랬는데… 받을 수 있을까?'], art: LAST({ doc: '자문' }) }
+    ],
+    'seed-9': [
+      { cap: '허리 통증', say: ['l|아이고, 허리야…'], art: [C('c', 62, 'hurt'), P('pain', 92, 66), P('mark', 124, 56, { t: '!' })] },
+      { cap: '1년 동안', say: ['n|도수치료를 60회나 받았어요'], art: [C('c', 38, 'neutral'), P('cal', 72, 58, { t: '60회' }), C('d', 146, 'smile', { flip: 1 })] },
+      { cap: '청구', say: ['l|영수증 60장, 전부 청구!'], art: [C('c', 46, 'smile', { arm: 'hold' }), P('receipts', 88, 54, { t: '60' }), P('receipts', 128, 54)] },
+      { cap: '보험사 답변', say: ['r|연간 한도랑 효과 확인 조건이 있어서요', 'q|전부 받을 순 없을까?'], art: LAST({ doc: '한도' }) }
+    ],
+    'seed-10': [
+      { cap: '교통사고', say: ['n|교통사고로 무릎 인대를 다쳤어요'], art: [P('car', 12, 60), C('c', 130, 'hurt', { band: 1 }), P('pain', 156, 80)] },
+      { cap: '수술 후', say: ['r|장해율 20%로 보입니다'], art: [C('c', 36, 'neutral', { band: 1 }), P('doc', 70, 56, { t: '20%' }), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '청구', say: ['l|후유장해 보험금 청구!'], art: [C('c', 50, 'smile', { band: 1, arm: 'hold' }), P('doc', 90, 56, { t: '청구서' }), P('spark', 140, 46)] },
+      { cap: '보험사 답변', say: ['r|자문의 판정은 10%예요. 1,000만 원만요', 'q|자문의 판정이 끝일까?'], art: LAST({ doc: '10%', band: 1 }) }
+    ],
+    'seed-11': [
+      { cap: '꽈당!', say: ['l|아얏! 허리가…'], art: [C('c', 66, 'hurt', { rot: -18 }), P('pain', 100, 64), P('mark', 128, 46, { t: '!' })] },
+      { cap: '수술', say: ['r|수술해야겠어요. 퇴행성 변화도 좀 보이네요'], art: [C('c', 36, 'worry'), P('xray', 69, 54), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '청구', say: ['l|후유장해 보험금 청구!'], art: [C('c', 50, 'smile', { arm: 'hold' }), P('doc', 90, 56, { t: '청구서' }), P('spark', 140, 46)] },
+      { cap: '보험사 답변', say: ['r|원래 있던 디스크 탓도 50%! 절반만요', 'q|사고 전엔 멀쩡했는데… 이대로 깎일까?'], art: LAST({ doc: '50%' }) }
+    ],
+    'seed-12': [
+      { cap: '가입 · 사무직', say: ['l|사무직으로 상해보험 가입!'], art: [C('c', 44, 'smile'), P('desk', 94, 58)] },
+      { cap: '2년 뒤', say: ['l|건설 현장으로 이직! 보험사엔… 괜찮겠지'], art: [C('c', 50, 'smile', { hat: 'helmet' }), P('cone', 98, 68), P('cone', 134, 68)] },
+      { cap: '현장 사고', say: ['l|아얏! 다쳤다…'], art: [C('c', 58, 'hurt', { hat: 'helmet', band: 1 }), P('pain', 88, 68), P('cone', 130, 68)] },
+      { cap: '보험금 청구', say: ['r|직업 바뀐 걸 안 알리셨죠? 감액입니다', 'q|1,000만 원, 다 받을 순 없을까?'], art: LAST({ doc: '감액', hat: 'helmet' }) }
+    ],
+    'seed-13': [
+      { cap: '3년 2개월 전', say: ['r|수술 잘 끝났어요'], art: [P('bed', 22, 54, { e: 'smile' }), C('d', 142, 'smile', { flip: 1 })] },
+      { cap: '그 뒤로', say: ['n|같은 병으로 통원 치료는 계속', 'l|보험금 청구? 깜빡했네~'], art: [C('c', 48, 'smile'), P('hospital', 104, 38)] },
+      { cap: '보장분석 상담', say: ['r|어? 이 수술비, 청구 안 하셨네요!'], art: [C('c', 36, 'shock'), P('doc', 68, 56, { t: '내역' }), P('mag', 88, 50), C('p', 142, 'shock', { flip: 1 })] },
+      { cap: '수술비 청구', say: ['r|수술비는 시효가 지나 거절입니다', 'q|3년 지나면 정말 끝일까?'], art: LAST() }
+    ],
+    'seed-14': [
+      { cap: '사고 2년 차', say: ['l|보험금 청구합니다!'], art: [C('c', 46, 'smile', { arm: 'hold' }), P('doc', 86, 56, { t: '청구서' }), P('cal', 132, 58, { t: '2년' })] },
+      { cap: '검토 중…', say: ['r|추가 조사 중이에요. 기다려 주세요'], art: [C('c', 36, 'think'), P('hourglass', 78, 64), C('i', 142, 'neutral', { flip: 1 })] },
+      { cap: '그사이 3년', say: ['l|아직도 검토 중…?'], art: [C('c', 46, 'worry'), P('cal', 86, 58, { t: '3년' }), P('hourglass', 138, 64)] },
+      { cap: '보험사 답변', say: ['r|지급 거절! 이제 시효도 지났어요', 'q|기다리기만 했는데… 받을 수 있을까?'], art: LAST() }
+    ],
+    'seed-15': [
+      { cap: '보험료 미납', say: ['l|앗, 보험이 실효됐네!'], art: [C('c', 48, 'shock'), P('doc', 88, 56, { t: '실효' }), P('mark', 138, 52, { t: '!' })] },
+      { cap: '실효 기간 중', say: ['r|위염 약 처방해 드릴게요'], art: [C('c', 36, 'hurt'), P('pill', 72, 76), C('d', 142, 'neutral', { flip: 1 })] },
+      { cap: '부활 신청', say: ['l|보험 다시 살려 주세요! 위염은… 됐겠지?'], art: [C('c', 50, 'smile', { arm: 'hold' }), P('doc', 90, 56, { t: '부활' }), P('spark', 140, 46)] },
+      { cap: '1년 뒤 · 교통사고', say: ['r|부활 때 위염 안 알리셨죠? 해지·거절!', 'q|다리 골절인데… 받을 수 있을까?'], art: LAST({ band: 1 }) }
+    ],
+    'seed-16': [
+      { cap: '계좌 변경', say: ['l|자동이체 계좌를 바꿨는데…'], art: [C('c', 48, 'neutral'), P('phone', 88, 64), P('money', 122, 73)] },
+      { cap: '2개월 미납', say: ['n|보험료 2개월 미납, 안내문은 옛 주소로…'], art: [P('mail', 34, 64), P('mark', 90, 82, { t: '?' }), P('cal', 118, 58, { t: '2개월', fs: 9.5 })] },
+      { cap: '입원', say: ['l|입원했으니 보험금 청구해야지'], art: [P('bed', 22, 54, { e: 'neutral' }), P('doc', 128, 56, { t: '청구서' })] },
+      { cap: '보험사 답변', say: ['r|이미 실효된 계약이라 거절입니다', 'q|안내도 못 받았는데… 받을 수 있을까?'], art: LAST() }
+    ],
+    'seed-17': [
+      { cap: '내시경', say: ['r|대장 용종, 내시경으로 떼어 냈어요'], art: [C('c', 36, 'neutral'), P('endo', 64, 56), C('d', 142, 'smile', { flip: 1 })] },
+      { cap: '수술비 청구', say: ['l|오래전 든 보험으로 수술비 청구!'], art: [C('c', 50, 'smile', { arm: 'hold' }), P('doc', 90, 56, { t: '청구서' }), P('spark', 140, 46)] },
+      { cap: '보험사 답변', say: ['r|절개를 안 했으니 수술이 아니에요'], art: [C('c', 36, 'shock'), P('doc', 73, 56), P('stamp', 64, 68), C('i', 142, 'stern', { flip: 1 })] },
+      { cap: '약관 확인', say: ['q|내시경 시술도… 「수술」 아닐까?'], art: [C('c', 46, 'think'), P('doc', 88, 56, { t: '약관' }), P('mag', 110, 62), P('mark', 146, 52, { t: '?' })] }
+    ],
+    'seed-18': [
+      { cap: '첫 입원', say: ['n|같은 병으로 120일 입원했어요'], art: [P('bed', 22, 54, { e: 'sad' }), P('cal', 124, 58, { t: '120일', fs: 10 })] },
+      { cap: '퇴원', say: ['l|드디어 퇴원이다!'], art: [C('c', 50, 'smile', { arm: 'up' }), P('spark', 84, 36), P('hospital', 108, 38)] },
+      { cap: '두 달 뒤', say: ['l|또 입원… 이번엔 60일'], art: [P('bed', 22, 54, { e: 'worry' }), P('cal', 124, 58, { t: '60일' })] },
+      { cap: '입원일당 청구', say: ['r|한 번의 입원으로 봐요. 한도 끝, 거절!', 'q|한도는 새로 시작 안 될까?'], art: LAST() }
+    ]
+  };
+  // 칸마다 점토(클레이) 그림 붙이기: assets/toon/<사례id>_<칸번호>.webp, LAST() 칸은 공통 그림 재사용(a=거절 도장, b=안내문 숫자)
+  var TOON_LAST = { 'seed-4': 'b', 'seed-7': 'b', 'seed-8': 'b', 'seed-9': 'b', 'seed-10': 'b', 'seed-11': 'b', 'seed-12': 'b' };
+  Object.keys(TOONS).forEach(function (id) {
+    TOONS[id].forEach(function (pn, i) {
+      pn.img = 'assets/toon/' + (i === 3 && id !== 'seed-17' ? 'last_' + (TOON_LAST[id] || 'a') : id + '_' + i) + '.webp';
+    });
+  });
+  function toonPanel(pn, last) {
+    var say = pn.say.map(function (s) {
+      var k = s.slice(0, s.indexOf('|')), t = s.slice(k.length + 1);
+      return '<p class="bub ' + (k === 'n' ? 'nar' : k) + '">' + esc(t) + '</p>';
+    }).join('');
+    return '<figure class="tp' + (last ? ' last' : '') + '"><figcaption class="tp-cap">' + esc(pn.cap) + '</figcaption>' +
+      '<div class="tp-say">' + say + '</div>' +
+      toonArt(pn, last) + '</figure>';
+  }
+  function toonArt(pn, last) {
+    // 그림 파일이 아직 없으면(생성 전) 기존 SVG 그림을 그대로 보여 줌
+    if (pn.img) return '<img class="tp-art tp-img" src="' + esc(pn.img) + '" alt="" loading="lazy" decoding="async" onerror="this.nextElementSibling.style.display=\'\';this.remove()">' + svgArt(pn, last).replace('<svg ', '<svg style="display:none" ');
+    return svgArt(pn, last);
+  }
+  function svgArt(pn, last) {
+    return '<svg class="tp-art" viewBox="0 16 180 88" aria-hidden="true" focusable="false"><path d="M-2 100q92-6 184 0v6H-2z" fill="' + (last ? '#fff' : TK.key) + '" opacity="' + (last ? '.7' : '1') + '"/>' + pn.art.join('') + '</svg>';
+  }
+  // HOT 배너용 미니 컷(그림 + 연도 태그만, 말풍선 없이)
+  var SHOW_TOON = false;   // 웹툰 빼기 (2026-11-13 요청) — true 로 바꾸면 다시 보임
+  function toonMini(id) {
+    var panels = SHOW_TOON && TOONS[id]; if (!panels) return '';
+    return '<div class="hot-toon" aria-hidden="true">' + panels.map(function (pn, i) {
+      return '<div class="ht' + (i === panels.length - 1 ? ' last' : '') + '"><span>' + esc(pn.cap.split(' · ')[0]) + '</span>' + toonArt(pn, i === panels.length - 1) + '</div>';
+    }).join('') + '</div>';
+  }
+  function toonHTML(id) {
+    var panels = SHOW_TOON && TOONS[id]; if (!panels) return '';
+    return '<section class="toon" aria-label="상황 웹툰"><div class="toon-strip">' +
+      panels.map(function (pn, i) { return toonPanel(pn, i === panels.length - 1); }).join('') +
+      '</div><p class="toon-next">결과는? 아래에서 확인하세요 ↓</p></section>';
+  }
+
+  // 🔥 HOT 배너: 사용자가 준 폐결절·폐암 판결 사례 (seed-1)
+  var HOT_ID = 'seed-1';
+  function renderHot() {
+    var p = posts.filter(function (x) { return x.id === HOT_ID; })[0];
+    var box = $('#hot'); if (!box) return;
+    if (!p) { box.innerHTML = ''; return; }
+    var mini = toonMini(p.id);
+    box.innerHTML = '<a class="hot' + (mini ? ' has-toon' : '') + '" href="#/post/' + encodeURIComponent(p.id) + '" aria-label="HOT 사례: ' + esc(p.title) + '">' +
+      '<div class="hot-main"><div class="hot-top"><span class="hot-label">🔥 HOT</span><span class="hot-cat">' + esc(p.category) + ' · ' + (p.kind === 'real' ? '실제 판결 요약' : '예시 사례') + '</span></div>' +
+      '<h2>' + esc(p.title) + '</h2>' +
+      (p.oneLine ? '<p class="hot-line">' + esc(p.oneLine) + '</p>' : '') +
+      '</div><div class="hot-side"><p class="hot-side-t">판결 결과</p><ul class="hot-res">' +
+      [['계약 해지', '인정'], ['암진단비 5,000만 원', '지급']].map(function (r) { return '<li><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></li>'; }).join('') +
+      '</ul><span class="hot-go">사례 자세히 보기 →</span></div>' + mini + '</a>';
+  }
+  function renderList() {
+    renderHot();
+    var q = state.q.trim(), list = filtered();
+    $('#count').innerHTML = '사례 <b>' + list.length + '</b>건';
+    $('#src').textContent = !state.loaded ? '사례를 불러오는 중…' : state.online ? '' : '서버에 연결되지 않아 기본 사례와 이 브라우저에 저장된 사례만 보여요.';
+    if (!list.length) { $('#board').innerHTML = '<div class="empty">찾는 사례가 없어요. 다른 단어로 검색하거나 카테고리를 바꿔 보세요.</div>'; return; }
+    var head = '<li aria-hidden="true"><div class="row th"><span class="c-num">번호</span><span class="c-cat">카테고리</span><span class="c-title">제목</span><span class="c-badge">결과</span><span class="c-author">작성자</span><span class="c-date">날짜</span></div></li>';
+    $('#board').innerHTML = '<ul>' + head + list.map(function (p) {
+      var v = views[p.id] || 0;
+      return '<li><a class="row" href="#/post/' + encodeURIComponent(p.id) + '" data-id="' + esc(p.id) + '">' +
+        '<span class="c-num">' + p.num + '</span>' +
+        '<span class="c-cat"><span class="tag">' + esc(p.category) + '</span></span>' +
+        '<span class="c-title"><span class="t-main">' + hl(p.title, q) + (p.kind === 'real' ? ' <span class="t-kind">' + kindLabel(p) + '</span>' : '') + '</span>' +
+          (p.oneLine ? '<span class="t-sub">' + hl(p.oneLine, q) + '</span>' : '') + '</span>' +
+        '<span class="c-badge">' + badge(p) + '</span>' +
+        '<span class="c-author">' + esc(p.author) + '</span>' +
+        '<span class="c-date">' + fmtDate(p.createdAt) + (v ? ' · 조회 ' + v : '') + '</span>' +
+      '</a></li>';
+    }).join('') + '</ul>';
+  }
+
+  // ---------- 상세 ----------
+  function renderPost(id) {
+    var p = posts.filter(function (x) { return x.id === id; })[0];
+    var el = $('#v-post');
+    if (!p) {
+      el.innerHTML = '<div class="post"><div class="topnav"><a class="btn" href="#/">← 목록으로</a></div><div class="paper"><h2 id="h-post" tabindex="-1" style="margin-top:0">' + (state.loaded ? '사례를 찾을 수 없어요' : '사례를 불러오는 중…') + '</h2><p class="byline" style="border:0;padding:0">삭제되었거나 주소가 잘못되었을 수 있어요.</p></div></div>';
+      return;
+    }
+    if (lastCounted !== p.id) { lastCounted = p.id; views[p.id] = (views[p.id] || 0) + 1; lsSet(LS_VIEWS, views); }
+    var q = state.q.trim();
+    var list = filtered(); if (!list.some(function (x) { return x.id === id; })) list = posts;
+    var i = list.map(function (x) { return x.id; }).indexOf(id);
+    var prev = list[i - 1], next = list[i + 1];
+    function para(s) { return lines(s).map(function (l) { return '<p>' + hl(l, q) + '</p>'; }).join(''); }
+    el.innerHTML = '<article class="post">' +
+      '<div class="topnav"><a class="btn" href="#/">← 목록으로</a></div>' +
+      '<div class="paper">' +
+        '<div class="meta-top"><span class="tag">' + esc(p.category) + '</span>' + kindLabel(p) + badge(p) + '</div>' +
+        '<h2 id="h-post" tabindex="-1">' + hl(p.title, q) + '</h2>' +
+        '<div class="byline"><b>' + esc(p.author) + '</b> · ' + fmtDate(p.createdAt) + ' · 조회 ' + views[p.id] + ' · No. ' + p.num + '</div>' +
+        toonHTML(p.id) +
+        '<section class="sec"><h3>사건 개요</h3>' + para(p.summary) + '</section>' +
+        '<section class="sec"><h3>보험사 대응</h3>' + para(p.insurerResponse) + '</section>' +
+        '<section class="sec"><h3>판단</h3>' + lines(p.judgment).map(function (l) { return '<div class="issue">' + hl(l, q) + '</div>'; }).join('') + '</section>' +
+        '<section class="sec"><h3>결과</h3><div class="result">' + para(p.result) + '</div></section>' +
+        '<section class="sec"><h3>왜 중요한가</h3>' + para(p.importance) + '</section>' +
+        '<section class="sec"><h3>실무 포인트</h3><ol class="points">' + p.points.map(function (t) { return '<li>' + hl(t, q) + '</li>'; }).join('') + '</ol></section>' +
+        (p.oneLine ? '<div class="oneline"><small>오늘의 핵심 한 줄</small>' + hl(p.oneLine, q) + '</div>' : '') +
+        '<p class="note" style="margin-top:22px">' + (p.kind === 'real' ? '실제 판결 내용을 이해하기 쉽게 요약한 것으로, 원문과 표현이 다를 수 있습니다.' : '이해를 돕기 위해 만든 가상의 예시 사례입니다.') + ' 실제 결과는 개별 사실관계와 약관·법령에 따라 달라질 수 있습니다.</p>' +
+      '</div>' +
+      '<nav class="pn" aria-label="이전·다음 사례">' +
+        (prev ? '<a href="#/post/' + encodeURIComponent(prev.id) + '"><small>← 이전 글</small><em>' + esc(prev.title) + '</em></a>' : '<span><small>← 이전 글</small><em>첫 번째 글이에요</em></span>') +
+        (next ? '<a class="next" href="#/post/' + encodeURIComponent(next.id) + '"><small>다음 글 →</small><em>' + esc(next.title) + '</em></a>' : '<span class="next"><small>다음 글 →</small><em>마지막 글이에요</em></span>') +
+      '</nav></article>';
+  }
+
+  // ---------- 글쓰기 ----------
+  $('#f-category').innerHTML = '<option value="">선택하세요</option>' + CATS.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+  var FIELDS = ['category', 'outcome', 'title', 'author', 'summary', 'insurerResponse', 'judgment', 'result', 'importance', 'points', 'oneLine'];
+  var LABELS = { category: '카테고리', outcome: '결과 배지', title: '제목', author: '작성자', summary: '사건 개요', insurerResponse: '보험사 대응', judgment: '판단', result: '결과', importance: '왜 중요한가', points: '실무 포인트', oneLine: '핵심 한 줄' };
+  function clearErr(f) { var box = f.closest('.field'); box.classList.remove('bad'); var e = box.querySelector('.err'); if (e) e.remove(); f.removeAttribute('aria-invalid'); }
+  function setErr(f, msg) {
+    var box = f.closest('.field'); box.classList.add('bad'); f.setAttribute('aria-invalid', 'true');
+    var e = box.querySelector('.err'); if (!e) { e = document.createElement('div'); e.className = 'err'; e.id = 'e-' + f.name; box.appendChild(e); }
+    e.textContent = '⚠ ' + msg; f.setAttribute('aria-describedby', ((f.getAttribute('aria-describedby') || '').replace(e.id, '').trim() + ' ' + e.id).trim());
+  }
+  $('#form').addEventListener('input', function (e) { if (e.target.name && FIELDS.indexOf(e.target.name) >= 0 && e.target.value.trim()) clearErr(e.target); });
+  $('#form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var form = e.target, data = {}, first = null;
+    FIELDS.forEach(function (k) {
+      var f = form.elements[k]; var v = f.value.trim(); clearErr(f);
+      if (!v) { setErr(f, LABELS[k] + '을(를) 입력해 주세요.'); first = first || f; }
+      data[k] = v;
+    });
+    if (data.points && !lines(data.points).length) { setErr(form.elements.points, '실무 포인트를 한 줄 이상 입력해 주세요.'); first = first || form.elements.points; }
+    if (first) { first.focus(); return; }
+    var kind = form.querySelector('input[name=kind]:checked');
+    var body = { category: data.category, title: data.title, author: data.author, kind: kind ? kind.value : 'example', outcome: data.outcome, summary: data.summary, insurerResponse: data.insurerResponse, judgment: data.judgment, result: data.result, importance: data.importance, points: lines(data.points), oneLine: data.oneLine };
+    var btn = $('#submit'); btn.disabled = true; btn.textContent = '등록 중…';
+    function done(saved) {
+      btn.disabled = false; btn.textContent = '사례 등록';
+      form.reset();
+      setPosts(posts.filter(function (p) { return p.id !== saved.id && SEED.every(function (s) { return s.id !== p.id; }); }).concat([saved]));
+      renderChips();
+      location.hash = '#/post/' + encodeURIComponent(saved.id);
+    }
+    function saveLocal() {
+      var saved = Object.assign({ id: 'local-' + Date.now(), createdAt: new Date().toISOString() }, body);
+      var arr = lsGet(LS_POSTS, []); if (!Array.isArray(arr)) arr = [];
+      arr.push(saved);
+      if (!lsSet(LS_POSTS, arr)) alert('브라우저 저장 공간을 사용할 수 없어 이 창을 닫으면 사라져요.');
+      state.online = false; $('#local-note').hidden = false;
+      done(saved);
+    }
+    if (!state.online) { saveLocal(); return; }
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (saved) {
+        if (!saved || !saved.id) throw new Error('bad response');
+        done(Object.assign({}, body, saved, { createdAt: saved.createdAt || new Date().toISOString() }));
+      })
+      .catch(function () { alert('서버에 저장하지 못해 이 브라우저에만 저장합니다.'); saveLocal(); });
+  });
+
+  // ---------- 라우팅 ----------
+  function show(view) { ['list', 'post', 'write'].forEach(function (v) { $('#v-' + v).hidden = v !== view; }); }
+  function route(initial) {
+    var h = (location.hash || '').replace(/^#/, '') || '/';
+    if (h.indexOf('/post/') === 0) {
+      var id = decodeURIComponent(h.slice(6));
+      show('post'); renderPost(id); lastFocusId = id;
+      if (!initial) { window.scrollTo(0, 0); var hp = $('#h-post'); if (hp) hp.focus({ preventScroll: true }); }
+    } else if (h === '/write') {
+      lastCounted = null; show('write'); $('#local-note').hidden = state.online || !state.loaded;
+      if (!initial) { window.scrollTo(0, 0); $('#h-write').focus({ preventScroll: true }); }
+    } else {
+      lastCounted = null; show('list'); renderChips(); renderList();
+      if (lastFocusId) { var a = $('#board a[data-id="' + (window.CSS && CSS.escape ? CSS.escape(lastFocusId) : lastFocusId) + '"]'); if (a) { a.focus({ preventScroll: true }); a.scrollIntoView({ block: 'center' }); } lastFocusId = null; }
+    }
+  }
+  window.addEventListener('hashchange', function () { route(false); });
+
+  // ---------- 목록 이벤트 ----------
+  $('#chips').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (!b) return;
+    state.cat = b.dataset.cat; renderChips(); renderList();
+    var nb = $('#chips .chip[aria-pressed="true"]'); if (nb) nb.focus();
+  });
+  document.querySelectorAll('.sort button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.sort = b.dataset.sort;
+      document.querySelectorAll('.sort button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      renderList();
+    });
+  });
+  $('#q').addEventListener('input', function (e) { state.q = e.target.value; renderList(); });
+
+  // ---------- 데이터 로드 ----------
+  setPosts([]);
+  route(true);
+  function fallback() {
+    var local = lsGet(LS_POSTS, []);
+    state.online = false; state.loaded = true;
+    setPosts(Array.isArray(local) ? local : []);
+    route(true);
+  }
+  if (true) { fallback(); }
+  else {
+    fetch(API, { headers: { Accept: 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (arr) {
+        if (!Array.isArray(arr)) throw new Error('bad data');
+        state.online = true; state.loaded = true;
+        setPosts(arr); route(true);
+      })
+      .catch(fallback);
+  }
+})();
+</script>
+</body>
+</html>

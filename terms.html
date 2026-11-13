@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>현장 용어 사전</title>
+<style>
+  /* 미니루트 5색: 키 #EAF0CC · 서브 #769636 · 테두리 #B5D334 + 글씨 #1F2A12 · 바탕 #F6F7F2 */
+  :root { --key: #EAF0CC; --sub: #769636; --line: #B5D334; --ink: #1F2A12; --muted: #5b6152; --body: #3a4131; --paper: #F6F7F2; --card: #fff; --soft: #FAFBF5; --hair: #E3E7D9; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  html { scroll-padding-top: 64px; }
+  body { background: var(--paper); color: var(--ink); font-family: Pretendard, "Pretendard Variable", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  /* 헤더 */
+  .hero { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+  .hero-ico { flex: none; width: 56px; height: 56px; border-radius: 18px; background: var(--key); display: grid; place-items: center; box-shadow: inset 0 -3px 0 rgba(118,150,54,.18); }
+  .hero-ico svg { width: 38px; height: 38px; }
+  .hero-txt { flex: 1; min-width: 0; }
+  .hero h1 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.6px; }
+  .hero p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+  .count { flex: none; align-self: flex-start; margin-top: 6px; font-size: 13.5px; font-weight: 700; color: var(--muted); background: #fff; border: 1.5px solid var(--hair); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
+  .count b { color: var(--sub); }
+
+  /* 검색 */
+  .search { position: relative; margin: 0 0 12px; }
+  .search input { width: 100%; height: 58px; padding: 0 52px 0 54px; border: 1.5px solid var(--hair); border-radius: 18px; background: #fff; font: inherit; font-size: 17px; color: var(--ink); outline: none; transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; appearance: none; }
+  .search input::-webkit-search-cancel-button { display: none; }
+  .search input::placeholder { color: #8a907f; }
+  .search input:hover { border-color: var(--line); }
+  .search input:focus { border-color: var(--line); box-shadow: 0 0 0 4px rgba(181,211,52,.22); }
+  .search .s-ico { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--sub); pointer-events: none; }
+  .search .clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; border-radius: 12px; background: var(--paper); color: var(--muted); cursor: pointer; display: none; place-items: center; }
+  .search .clear:hover { background: var(--key); color: var(--ink); }
+  .search.has .clear { display: grid; }
+  .hint { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: -2px 0 14px; font-size: 13px; color: var(--muted); }
+  .hint button { border: 1.5px solid var(--hair); background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--body); cursor: pointer; }
+  .hint button:hover { border-color: var(--line); background: var(--soft); }
+
+  /* 분야 칩 */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px 0 8px; border: 1.5px solid var(--hair); border-radius: 999px; background: #fff; color: var(--ink); font-size: 14.5px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: border-color .15s, background .15s; }
+  .chip .ci { width: 26px; height: 26px; border-radius: 50%; background: var(--paper); display: grid; place-items: center; }
+  .chip .ci svg { width: 20px; height: 20px; }
+  .chip.all { padding-left: 14px; }
+  .chip:hover { border-color: var(--line); }
+  .chip[aria-pressed="true"] { background: var(--key); border-color: var(--line); }
+  .chip[aria-pressed="true"] .ci { background: #fff; }
+  .chip small { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+
+  /* 가나다 바로가기 (스티키) */
+  .index-bar { position: sticky; top: 0; z-index: 20; margin: 12px -20px 4px; padding: 8px 20px; background: var(--paper); border-bottom: 1.5px solid transparent; transition: border-color .15s; }
+  .index-bar.stuck { border-bottom-color: var(--hair); }
+  .index { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .index::-webkit-scrollbar { display: none; }
+  .index button { flex: none; min-width: 36px; height: 34px; padding: 0 6px; border: 1.5px solid transparent; border-radius: 10px; background: transparent; color: var(--muted); font-size: 14.5px; font-weight: 800; cursor: pointer; }
+  .index button:hover:not(:disabled) { border-color: var(--line); background: #fff; color: var(--ink); }
+  .index button.on { background: var(--key); color: var(--ink); }
+  .index button:disabled { opacity: .28; cursor: default; }
+
+  /* 오늘의 용어 */
+  .today { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin: 14px 0 6px; padding: 20px 22px; background: #fff; border: 1.5px solid var(--hair); border-radius: 22px; cursor: pointer; transition: border-color .15s, box-shadow .15s; position: relative; }
+  .today:hover { border-color: var(--line); box-shadow: 0 6px 18px rgba(31,42,18,.06); }
+  .today .big { width: 88px; height: 88px; border-radius: 26px; background: var(--key); display: grid; place-items: center; box-shadow: inset 0 -4px 0 rgba(118,150,54,.16); }
+  .today .big svg { width: 62px; height: 62px; }
+  .today .lb { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: var(--sub); letter-spacing: .2px; }
+  .today .lb i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+  .today h2 { margin: 4px 0 4px; font-size: 22px; font-weight: 800; letter-spacing: -.4px; }
+  .today .ez { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--body); }
+  .today .more { position: absolute; right: 18px; top: 18px; font-size: 13px; font-weight: 700; color: var(--sub); }
+
+  /* 목록 */
+  .group { margin-top: 26px; }
+  .group h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 15px; font-weight: 800; color: var(--muted); }
+  .group h2 span { display: grid; place-items: center; min-width: 34px; height: 34px; padding: 0 8px; border-radius: 11px; background: var(--key); color: var(--sub); font-size: 17px; }
+  .group h2::after { content: ""; flex: 1; height: 1.5px; background: var(--hair); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 14px; align-items: start; }
+
+  .term { display: flex; flex-direction: column; gap: 10px; background: var(--card); border: 1.5px solid var(--hair); border-radius: 20px; padding: 16px 18px 16px; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; scroll-margin-top: 70px; }
+  .term:hover { border-color: var(--line); box-shadow: 0 6px 18px rgba(31,42,18,.06); }
+  .term:focus-visible { outline: none; border-color: var(--line); box-shadow: 0 0 0 4px rgba(181,211,52,.25); }
+  .term.flash { animation: flash 1.6s ease; }
+  @keyframes flash { 0%, 35% { border-color: var(--line); box-shadow: 0 0 0 6px rgba(181,211,52,.35); } 100% { box-shadow: 0 0 0 0 rgba(181,211,52,0); } }
+  .term-head { display: flex; align-items: center; gap: 12px; }
+  .ico { flex: none; width: 48px; height: 48px; border-radius: 15px; background: var(--paper); display: grid; place-items: center; box-shadow: inset 0 -3px 0 rgba(118,150,54,.10); transition: background .15s; }
+  .ico svg { width: 36px; height: 36px; display: block; }
+  .term:hover .ico { background: var(--key); }
+  .ttl { min-width: 0; flex: 1; }
+  .term h3 { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.3px; line-height: 1.3; word-break: keep-all; }
+  .tag { display: inline-block; margin-top: 3px; font-size: 12px; font-weight: 700; color: var(--sub); }
+  .ez { margin: 0; padding: 10px 12px; background: var(--key); border-radius: 12px; font-size: 14.5px; font-weight: 600; line-height: 1.5; color: var(--ink); word-break: keep-all; }
+  .ez b { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 6px; background: #fff; color: var(--sub); font-size: 11.5px; font-weight: 800; vertical-align: 1px; }
+  .def { margin: 0; font-size: 14.5px; line-height: 1.65; color: var(--body); word-break: keep-all; }
+  .say { position: relative; display: flex; gap: 10px; padding: 11px 12px; background: var(--soft); border: 1.5px dashed var(--line); border-radius: 14px; font-size: 14px; line-height: 1.55; color: var(--ink); word-break: keep-all; }
+  .say svg { flex: none; width: 26px; height: 26px; margin-top: 1px; }
+  .say small { display: block; margin-bottom: 1px; font-size: 11.5px; font-weight: 800; color: var(--sub); }
+  .rel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 2px; }
+  .rel > span { font-size: 12px; font-weight: 700; color: var(--muted); margin-right: 2px; }
+  .rel button { display: inline-flex; align-items: center; gap: 4px; height: 30px; padding: 0 10px 0 4px; border: 1.5px solid var(--hair); border-radius: 999px; background: #fff; font-size: 13px; font-weight: 700; color: var(--body); cursor: pointer; transition: border-color .15s, background .15s; }
+  .rel button svg { width: 22px; height: 22px; }
+  .rel button:hover { border-color: var(--line); background: var(--soft); color: var(--ink); }
+  mark { background: var(--line); color: inherit; border-radius: 3px; padding: 0 1px; }
+
+  .empty { margin: 30px auto 0; max-width: 460px; padding: 36px 24px; text-align: center; background: #fff; border: 1.5px dashed var(--line); border-radius: 22px; }
+  .empty .big { width: 84px; height: 84px; margin: 0 auto 12px; border-radius: 26px; background: var(--key); display: grid; place-items: center; }
+  .empty .big svg { width: 58px; height: 58px; }
+  .empty h3 { margin: 0 0 6px; font-size: 18px; font-weight: 800; }
+  .empty p { margin: 0 0 16px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+  .empty .hint { justify-content: center; margin: 0 0 14px; }
+  .btn { height: 42px; padding: 0 18px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--key); font-size: 14.5px; font-weight: 800; color: var(--ink); cursor: pointer; }
+  .btn:hover { background: #fff; }
+  .note { margin-top: 40px; font-size: 12.5px; color: var(--muted); line-height: 1.6; text-align: center; }
+
+  /* 자세히 보기 시트 */
+  .sheet-bg { position: fixed; inset: 0; z-index: 50; background: rgba(31,42,18,.32); display: none; align-items: center; justify-content: center; padding: 20px; }
+  .sheet-bg.open { display: flex; animation: fade .15s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .sheet { position: relative; width: 100%; max-width: 520px; max-height: calc(100vh - 40px); overflow-y: auto; background: #fff; border-radius: 26px; padding: 26px 24px 22px; box-shadow: 0 20px 50px rgba(31,42,18,.18); animation: up .2s ease; }
+  @keyframes up { from { transform: translateY(14px); opacity: .6; } to { transform: none; opacity: 1; } }
+  .sheet .x { position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border: 0; border-radius: 12px; background: var(--paper); color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+  .sheet .x:hover { background: var(--key); color: var(--ink); }
+  .sheet .top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; padding-right: 40px; }
+  .sheet .big { flex: none; width: 76px; height: 76px; border-radius: 24px; background: var(--key); display: grid; place-items: center; box-shadow: inset 0 -4px 0 rgba(118,150,54,.16); }
+  .sheet .big svg { width: 54px; height: 54px; }
+  .sheet h2 { margin: 0; font-size: 23px; font-weight: 800; letter-spacing: -.4px; word-break: keep-all; }
+  .sheet .body { display: flex; flex-direction: column; gap: 12px; }
+  .sheet .def { font-size: 15.5px; }
+  .sheet .ez { font-size: 15.5px; }
+  .sheet .say { font-size: 15px; }
+  .sheet .rel { padding-top: 6px; border-top: 1.5px solid var(--hair); margin-top: 4px; padding-top: 14px; }
+
+  @media (max-width: 600px) {
+    html { scroll-padding-top: 58px; }
+    .wrap { padding: 18px 16px 48px; }
+    .hero { gap: 12px; margin-bottom: 14px; }
+    .hero-ico { width: 46px; height: 46px; border-radius: 15px; }
+    .hero-ico svg { width: 32px; height: 32px; }
+    .hero h1 { font-size: 22px; }
+    .hero p { font-size: 13.5px; }
+    .count { margin-top: 2px; padding: 5px 10px; font-size: 12.5px; }
+    .search input { height: 52px; font-size: 16px; border-radius: 16px; padding-left: 48px; }
+    .search .s-ico { left: 15px; }
+    .chips, .wrap > .hint { flex-wrap: nowrap; overflow-x: auto; margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar, .wrap > .hint::-webkit-scrollbar { display: none; }
+    .wrap > .hint > * { flex: none; }
+    .index-bar { margin: 10px -16px 2px; padding: 6px 16px; }
+    .today { gap: 14px; padding: 16px 16px; align-items: start; }
+    .today .big { width: 62px; height: 62px; border-radius: 19px; }
+    .today .big svg { width: 44px; height: 44px; }
+    .today h2 { font-size: 19px; margin-right: 44px; }
+    .today .ez { font-size: 14.5px; }
+    .today .more { right: 14px; top: 14px; }
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+    .term { padding: 15px 15px; border-radius: 18px; }
+    .term h3 { font-size: 17px; }
+    .sheet-bg { align-items: flex-end; padding: 0; }
+    .sheet { max-width: none; border-radius: 24px 24px 0 0; max-height: 88vh; padding: 24px 18px 22px; }
+    .sheet .big { width: 64px; height: 64px; border-radius: 20px; }
+    .sheet .big svg { width: 46px; height: 46px; }
+    .sheet h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-ico" id="heroIco" aria-hidden="true"></div>
+    <div class="hero-txt">
+      <h1>현장 용어 사전</h1>
+      <p>처음 보는 용어도 그림과 한 줄 풀이로 쉽게 이해해요.</p>
+    </div>
+    <div class="count" id="count"></div>
+  </header>
+
+  <div class="search" id="searchBox">
+    <svg class="s-ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="용어나 설명을 검색하세요 (초성도 돼요: ㅁㅊㄱㄱ)" autocomplete="off" aria-label="용어 검색">
+    <button type="button" class="clear" id="clearQ" aria-label="검색어 지우기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="hint" id="hint"></div>
+  <div class="chips" id="chips" role="toolbar" aria-label="분야"></div>
+  <div class="index-bar" id="indexBar"><nav class="index" id="index" aria-label="가나다 바로가기"></nav></div>
+  <section id="today" hidden></section>
+  <main id="list"></main>
+  <p class="note">설명은 현장 이해를 돕기 위한 요약입니다. 정확한 기준은 상품 약관·회사 규정·관련 법령을 확인하세요.</p>
+</div>
+<div class="sheet-bg" id="sheetBg" aria-hidden="true"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
+
+<script>
+(function () {
+  'use strict';
+  // c: 분야, t: 용어, d: 쉬운 설명, s: 고객에게 이렇게 설명해요 (선택)
+  var C = { A: '계약·심사', B: '보장·상품', C: '청구·보상', D: '수수료·조직', E: '영업 현장', F: '법·규정' };
+  var TERMS = [
+    // 계약·심사
+    { c: 'A', t: '고지의무', d: '계약 전에 고객이 병력·직업 등 보험사가 묻는 사항을 사실대로 알려야 하는 의무. 최근에는 「계약 전 알릴 의무」라고 부릅니다.', s: '가입하실 때 묻는 건강 질문에 사실대로 답하셔야 나중에 보험금을 제대로 받으실 수 있어요.' },
+    { c: 'A', t: '언더라이팅', d: '보험사가 청약서·건강 정보를 보고 가입 가능 여부와 조건(할증·부담보 등)을 정하는 심사 과정.' },
+    { c: 'A', t: '부담보', d: '특정 질병이나 신체 부위를 일정 기간 또는 전 기간 보장에서 빼고 가입시키는 조건.', s: '과거 치료하신 부위는 정해진 기간 동안만 보장에서 빠지고, 나머지는 정상 보장돼요.' },
+    { c: 'A', t: '할증', d: '건강 상태나 직업 위험 때문에 표준보다 보험료를 더 받는 조건.' },
+    { c: 'A', t: '표준체·비표준체', d: '건강·직업 위험이 일반적인 사람을 표준체, 기준보다 위험이 높아 조건이 붙는 사람을 비표준체라고 합니다.' },
+    { c: 'A', t: '간편심사(유병자) 보험', d: '심사 질문을 줄여 지병이 있는 사람도 가입하기 쉽게 만든 상품. 대신 보험료가 일반 상품보다 높은 편입니다.', s: '지금 치료 중인 병이 있어도 몇 가지 질문만 통과하면 가입하실 수 있는 상품이에요.' },
+    { c: 'A', t: '청약', d: '고객이 보험에 가입하겠다는 의사를 서면·전자 방식으로 보험사에 신청하는 것.' },
+    { c: 'A', t: '청약철회', d: '보험증권을 받은 날부터 정해진 기간 안에 이유 없이 가입을 취소하고 보험료를 돌려받을 수 있는 제도.' },
+    { c: 'A', t: '품질보증해지', d: '약관·청약서를 전달받지 못했거나 중요 내용 설명이 없었을 때, 일정 기간 안에 계약을 취소하고 보험료를 돌려받는 제도.' },
+    { c: 'A', t: '실효', d: '보험료를 정해진 기간까지 내지 않아 계약의 효력이 멈춘 상태.' },
+    { c: 'A', t: '부활', d: '실효된 계약을 정해진 기간 안에 밀린 보험료를 내고 다시 살리는 절차. 다시 심사를 받을 수 있습니다.' },
+    { c: 'A', t: '전자청약', d: '종이 대신 휴대폰·태블릿으로 청약서 작성과 서명을 끝내는 방식.' },
+    { c: 'A', t: '알릴의무 위반', d: '계약 전 알릴 의무를 지키지 않은 것. 보험사가 계약을 해지하거나 관련 보험금을 지급하지 않을 수 있습니다.' },
+    { c: 'A', t: '가입설계', d: '고객 정보와 원하는 보장을 바탕으로 상품·특약·가입금액·보험료를 미리 짜 보는 것. 결과물을 가입설계서라고 합니다.', s: '고객님께 맞춰 보장과 보험료를 미리 짜 본 설계서부터 보여 드릴게요.' },
+    { c: 'A', t: '청약서', d: '가입 신청 내용과 알릴 의무 질문에 대한 답을 적고 계약자·피보험자가 서명하는 문서.' },
+    { c: 'A', t: '청약서 부본', d: '청약서의 고객 보관용 사본. 청약 후 반드시 고객에게 전달해야 합니다.', s: '가입하신 내용이 적힌 고객님 보관용 사본이니 잘 보관해 두세요.' },
+    { c: 'A', t: '서면청약', d: '종이 청약서에 직접 적고 서명해 청약하는 방식. 전자청약과 대비됩니다.' },
+    { c: 'A', t: '자필서명', d: '계약자·피보험자가 청약서 등에 직접 하는 서명. 다른 사람이 대신 서명하면 계약이 무효가 될 수 있습니다.', s: '이 서명은 꼭 본인이 직접 해 주셔야 계약이 제대로 효력을 가져요.' },
+    { c: 'A', t: '전자서명', d: '전자청약 때 화면에 직접 하는 서명이나, 인증서·간편인증으로 대신하는 서명.' },
+    { c: 'A', t: '보정', d: '청약·청구 서류에 빠지거나 틀린 부분이 있을 때 보완을 요청받거나 서류를 고쳐 다시 내는 것.' },
+    { c: 'A', t: '신계약', d: '새로 체결된 계약. 실적과 수수료 계산의 기준이 됩니다.' },
+    { c: 'A', t: '계약전환', d: '기존 계약을 해지하지 않고 같은 회사의 다른 상품으로 바꾸는 제도. 전환 조건은 상품마다 다릅니다.' },
+    { c: 'A', t: '경과기간', d: '계약일부터 지금까지 지난 기간. 면책·감액기간, 환급금, 수수료 환수 여부를 따지는 기준이 됩니다.' },
+    { c: 'A', t: '초회보험료', d: '계약 후 처음 내는 보험료. 보통 이 보험료가 납입되어야 보장이 시작됩니다.', s: '첫 보험료가 들어가는 날부터 보장이 시작돼요.' },
+    { c: 'A', t: '납입주기', d: '보험료를 내는 간격. 월납·3개월납·6개월납·연납·일시납 등이 있습니다.', s: '보험료는 매달 내셔도 되고, 1년에 한 번 모아서 내셔도 돼요.' },
+    { c: 'A', t: '자동이체', d: '정해진 날 지정 계좌에서 보험료가 자동으로 빠져나가게 하는 납입 방식.', s: '매달 정해진 날 통장에서 자동으로 나가서, 깜빡하고 못 내실 걱정이 줄어요.' },
+    { c: 'A', t: '보험계약자', d: '‘계약자’와 같은 말. 보험사와 계약을 맺고 보험료를 내며 계약 변경·해지 권리를 가진 사람입니다. ‘계약자·피보험자’ 참고.' },
+    { c: 'A', t: '피보험자', d: '보험 사고(질병·상해·사망 등)의 대상이 되는 사람. ‘계약자·피보험자’ 참고.', s: '이 보험으로 보장받으시는 분이 피보험자예요.' },
+    { c: 'A', t: '보험증권', d: '계약이 성립했음을 증명하는 문서. 계약자·피보험자·보장 내용·보험기간 등이 적혀 있습니다.', s: '가입하신 내용이 모두 담긴 증명서라서, 보험금 청구하실 때를 위해 잘 보관해 주세요.' },
+    { c: 'A', t: '약관', d: '보장 내용·지급 조건·면책 사항 등 보험 계약의 규칙을 정한 문서. 분쟁이 생기면 약관이 기준이 됩니다.', s: '보험금이 언제, 얼마나 나오는지는 모두 이 약관에 정해져 있어요.' },
+    { c: 'A', t: '해피콜', d: '계약 후 보험사가 고객에게 전화해 설명을 제대로 들었는지, 직접 서명했는지 등을 확인하는 절차. ‘완전판매 모니터링’ 참고.', s: '며칠 안에 보험사에서 확인 전화가 오면 편하게 사실대로 답해 주시면 돼요.' },
+
+    // 보장·상품
+    { c: 'B', t: '주계약·특약', d: '상품의 기본이 되는 보장이 주계약, 원하는 보장을 덧붙이는 것이 특약입니다.' },
+    { c: 'B', t: '갱신형', d: '정해진 기간마다 계약이 갱신되며 그때 나이·손해율에 따라 보험료가 바뀔 수 있는 상품.', s: '처음 보험료는 저렴하지만, 몇 년마다 다시 계산돼서 오를 수 있어요.' },
+    { c: 'B', t: '비갱신형', d: '납입 기간 동안 보험료가 처음 정한 금액 그대로 유지되는 상품.', s: '처음엔 조금 비싸도 다 내실 때까지 보험료가 오르지 않아요.' },
+    { c: 'B', t: '면책기간', d: '가입 후 일정 기간 동안 특정 보장(예: 암)을 보장하지 않는 기간.', s: '가입하고 바로가 아니라 정해진 날 이후부터 보장이 시작되는 항목이 있어요.' },
+    { c: 'B', t: '감액기간', d: '가입 후 일정 기간 안에 사고가 나면 보험금을 일부(예: 50%)만 지급하는 기간.' },
+    { c: 'B', t: '납입면제', d: '큰 병이나 장해가 생기면 이후 보험료를 내지 않아도 보장은 그대로 유지되는 기능.', s: '큰 병에 걸리시면 그다음부터는 보험료를 안 내셔도 보장은 계속돼요.' },
+    { c: 'B', t: '실손의료보험', d: '실제로 쓴 병원비(급여·비급여)를 자기부담금을 뺀 범위에서 돌려주는 보험. 여러 개 가입해도 실제 쓴 돈 이상은 받지 않습니다.' },
+    { c: 'B', t: '종신보험', d: '언제 사망하든 평생 사망보험금을 보장하는 상품.' },
+    { c: 'B', t: '정기보험', d: '정해진 기간(예: 60세까지) 동안만 사망을 보장하는 상품. 종신보험보다 보험료가 저렴합니다.' },
+    { c: 'B', t: '무해지·저해지 상품', d: '납입 기간 중 해지하면 환급금이 없거나 적은 대신 보험료가 저렴한 상품.', s: '중간에 해지하면 돌려받는 돈이 거의 없는 대신, 매달 보험료가 싸요.' },
+    { c: 'B', t: '순수보장형', d: '만기 때 돌려받는 돈 없이 보장에만 집중한 상품.' },
+    { c: 'B', t: '해지환급금', d: '계약을 중간에 해지할 때 돌려받는 돈. 낸 보험료보다 적을 수 있습니다.' },
+    { c: 'B', t: '만기환급금', d: '보험 기간이 끝났을 때 돌려받는 돈. 상품 구조에 따라 없을 수도 있습니다.' },
+    { c: 'B', t: '변액보험', d: '보험료 일부를 펀드에 투자해 수익률에 따라 보험금이나 환급금이 달라지는 상품.' },
+    { c: 'B', t: '유니버셜 기능', d: '보험료를 일정 기간 뒤 쉬거나 더 내고, 적립금을 일부 꺼내 쓸 수 있는 기능.' },
+    { c: 'B', t: '가입금액', d: '사고가 났을 때 보험사가 지급하기로 정한 보장 금액(예: 암진단비 3,000만 원).' },
+    { c: 'B', t: '보험료', d: '보장을 받는 대가로 계약자가 보험사에 내는 돈. 나이·성별·건강·보장 내용에 따라 달라집니다.' },
+    { c: 'B', t: '종합의료보험', d: '질병·상해로 인한 진단·입원·수술 등 의료 관련 보장을 한 상품에 모아 놓은 보험.', s: '아프시거나 다치셨을 때 필요한 보장을 하나로 묶어 둔 보험이에요.' },
+    { c: 'B', t: '상해보험', d: '우연한 외부 사고로 다쳤을 때 사망·후유장해·치료비 등을 보장하는 보험.' },
+    { c: 'B', t: '연금보험', d: '일정 기간 보험료를 모은 뒤 정한 나이부터 연금으로 나눠 받는 상품.', s: '나중에 매달 월급처럼 받으시도록 지금부터 모아 두는 보험이에요.' },
+    { c: 'B', t: 'CI보험', d: 'Critical Illness(중대한 질병) 보험. 암·심근경색 등 중대 질병 진단 시 사망보험금 일부를 미리 받을 수 있는 상품.', s: '큰 병에 걸리시면 사망보험금 일부를 미리 받아 치료비로 쓰실 수 있어요.' },
+    { c: 'B', t: '보증보험', d: '계약 이행이나 채무 등을 보증해 주는 보험. 상대방이 의무를 지키지 않으면 보험사가 대신 손해를 물어 줍니다.' },
+    { c: 'B', t: '책임준비금', d: '보험사가 앞으로 지급할 보험금·환급금에 대비해 쌓아 두는 돈.' },
+
+    // 청구·보상
+    { c: 'C', t: '미청구 보험금', d: '보장을 받을 수 있는데 고객이 아직 청구하지 않은 보험금. 「숨은 보험금」이라고도 합니다.', s: '받으실 수 있는데 아직 안 받으신 보험금이 있는지 찾아드릴게요.' },
+    { c: 'C', t: '소멸시효', d: '보험금을 청구할 수 있는 기간. 사고일로부터 3년이 지나면 청구권이 사라집니다.', s: '병원 다녀오신 지 3년이 지나면 청구가 어려워서, 그 전에 꼭 챙기셔야 해요.' },
+    { c: 'C', t: '손해사정', d: '사고 내용과 손해액을 조사해 지급할 보험금을 산정하는 일. 이를 하는 전문가가 손해사정사입니다.' },
+    { c: 'C', t: '지급심사', d: '청구된 보험금이 약관상 지급 대상인지 보험사가 확인하는 절차.' },
+    { c: 'C', t: '의료자문', d: '보험사가 지급 판단을 위해 다른 의사에게 진단·치료 적정성에 대한 의견을 구하는 것.' },
+    { c: 'C', t: '수익자', d: '보험금을 받는 사람. 계약자·피보험자와 다를 수 있습니다.' },
+    { c: 'C', t: '비례보상', d: '같은 보장을 여러 보험에 가입했을 때 실제 손해액을 각 보험이 나눠서 지급하는 방식(주로 실손·배상책임).' },
+    { c: 'C', t: '진단비', d: '특정 질병을 진단받으면 정해진 금액을 한 번에 지급하는 보장.' },
+    { c: 'C', t: '입원일당·수술비', d: '입원한 날수만큼, 또는 수술 종류에 따라 정해진 금액을 지급하는 보장.' },
+    { c: 'C', t: '지정대리청구', d: '피보험자가 직접 보험금을 청구하기 어려운 경우를 대비해 미리 정해 둔 가족이 대신 청구할 수 있게 하는 제도.', s: '혹시 직접 청구하기 어려우실 때를 대비해 가족분을 대리인으로 정해 두시면 좋아요.' },
+
+    // 수수료·조직
+    { c: 'D', t: 'GA', d: '여러 보험사 상품을 함께 판매하는 독립 법인대리점(General Agency).' },
+    { c: 'D', t: '원수사', d: 'GA가 판매하는 상품을 실제로 만들고 보장하는 보험회사.' },
+    { c: 'D', t: '1200%룰', d: '계약 첫해 설계사·GA에 지급할 수 있는 수수료·시책 합계를 월 보험료의 1200% 이내로 제한한 규정.' },
+    { c: 'D', t: '분급', d: '수수료를 한 번에 주지 않고 여러 해에 나눠 지급하는 방식. 계약 유지와 환수 예방을 위한 제도입니다.' },
+    { c: 'D', t: '선지급', d: '나중에 받을 수수료나 시책 일부를 미리 앞당겨 받는 것.' },
+    { c: 'D', t: '환수', d: '계약이 일찍 해지·실효되면 이미 받은 수수료를 다시 돌려내는 것.' },
+    { c: 'D', t: '유지율', d: '체결한 계약이 일정 기간(13회차·25회차 등) 뒤에도 유지되는 비율. 설계사 계약 품질의 핵심 지표입니다.' },
+    { c: 'D', t: '시책', d: '보험사·GA가 특정 기간·상품 실적에 대해 수수료 외에 추가로 주는 인센티브.' },
+    { c: 'D', t: '오버라이드(OR)', d: '소속 설계사 실적에 따라 관리자(지점장 등)가 받는 관리 수수료.' },
+    { c: 'D', t: '정착지원금', d: 'GA로 옮긴 설계사가 자리 잡을 때까지 일정 기간 지원하는 금액. 조건에 따라 반환 의무가 있을 수 있습니다.' },
+    { c: 'D', t: '위촉·해촉', d: '설계사를 소속으로 등록하는 것이 위촉, 소속을 해지하는 것이 해촉입니다.' },
+    { c: 'D', t: '설계사 코드', d: '보험사가 설계사에게 부여하는 고유 번호. 이 코드로 계약과 수수료가 연결됩니다.' },
+    { c: 'D', t: '설계사', d: '보험회사나 대리점에 등록해 보험 계약을 모집하는 사람. 정식 명칭은 보험설계사입니다.' },
+    { c: 'D', t: '모집인', d: '보험 계약 체결을 중개·대리하는 사람을 이르는 말. 설계사·대리점 등 모집 종사자를 넓게 가리킵니다.' },
+    { c: 'D', t: 'FP', d: 'Financial Planner(재무설계사). 현장에서는 보험설계사를 부르는 말로도 널리 쓰입니다.' },
+    { c: 'D', t: '기업형 GA', d: '본사가 조직·교육·전산을 직접 통제하며 하나의 회사처럼 운영하는 GA.' },
+    { c: 'D', t: '자회사형 GA', d: '보험사가 자회사로 세운 GA. 모회사 상품뿐 아니라 다른 회사 상품도 판매합니다.' },
+    { c: 'D', t: '계약이관', d: '담당 설계사가 그만두거나 바뀔 때 계약의 관리 담당을 다른 설계사·조직으로 옮기는 것.' },
+    { c: 'D', t: '수수료', d: '계약을 모집하고 유지한 대가로 보험사가 설계사·GA에 지급하는 돈.' },
+    { c: 'D', t: '초회 수수료', d: '계약 첫 회 보험료를 기준으로 처음 지급되는 수수료.' },
+    { c: 'D', t: '유지 수수료', d: '계약이 유지되는 동안 회차별로 나눠 받는 수수료.' },
+    { c: 'D', t: '수수료 등급', d: '설계사의 실적·경력·유지율 등에 따라 적용 수수료율을 다르게 매기는 등급.' },
+    { c: 'D', t: 'GWP', d: 'Gross Written Premium(원수보험료). 보험사가 일정 기간 거둬들인 전체 보험료 규모를 나타내는 지표.' },
+    { c: 'D', t: '환산성적', d: '환산 기준을 적용해 계산한 실적. 시상·수수료·등급 산정의 기준이 됩니다.' },
+    { c: 'D', t: '환수율', d: '지급된 수수료 가운데 해지·실효 등으로 다시 돌려낸 수수료의 비율.' },
+    { c: 'D', t: 'MDRT', d: 'Million Dollar Round Table. 일정 수준 이상의 연간 실적을 낸 설계사가 가입하는 국제 우수 설계사 단체.' },
+    { c: 'D', t: 'COT', d: 'Court of the Table. MDRT 기준의 3배 이상 실적을 낸 회원 등급.' },
+    { c: 'D', t: 'TOT', d: 'Top of the Table. MDRT 기준의 6배 이상 실적을 낸 최고 회원 등급.' },
+    { c: 'D', t: 'AFPK', d: 'Associate Financial Planner Korea. 한국FPSB가 주관하는 재무설계 기본 자격증.' },
+    { c: 'D', t: 'CFP', d: 'Certified Financial Planner. AFPK 상위의 국제 공인 재무설계사 자격증.' },
+
+    // 영업 현장
+    { c: 'E', t: '보장분석', d: '고객이 가진 보험을 모아 보장 내용과 부족·중복을 진단하는 상담.', s: '지금 가지고 계신 보험을 한눈에 정리해서, 부족하거나 겹치는 보장을 알려드릴게요.' },
+    { c: 'E', t: '보장리모델링', d: '‘리모델링’과 같은 뜻으로, 기존 보장을 점검해 고객에게 맞게 다시 구성하는 것입니다.' },
+    { c: 'E', t: '상품비교표', d: '여러 상품의 보장·보험료·조건을 나란히 놓고 비교한 표. 계약을 갈아탈 때 비교 안내 자료로도 쓰입니다.' },
+    { c: 'E', t: '법인영업', d: '기업·법인 대표를 대상으로 단체보험, CEO 플랜 등을 상담·판매하는 영업.' },
+    { c: 'E', t: 'TM', d: 'Telemarketing. 전화로 상담하고 보험을 판매하는 채널.' },
+    { c: 'E', t: 'CM 채널', d: 'Cyber Marketing 채널. 고객이 인터넷·모바일로 직접 가입하는 온라인 판매 채널.' },
+
+    // 법·규정
+    { c: 'F', t: '금소법', d: '금융소비자보호법. 적합성·적정성·설명의무·불공정영업 금지·부당권유 금지·허위과장광고 금지의 6대 판매원칙을 담고 있습니다.' },
+    { c: 'F', t: '불완전판매', d: '상품의 중요 내용을 제대로 설명하지 않거나 고객에게 맞지 않는 상품을 판매하는 것.' },
+    { c: 'F', t: '설명의무', d: '보장 내용·보험료·면책 사항 등 중요한 내용을 고객이 이해하도록 설명해야 하는 의무.' },
+    { c: 'F', t: '적합성 원칙', d: '고객의 나이·재산·목적 등을 확인해 맞지 않는 상품은 권하지 않아야 한다는 원칙.' },
+    { c: 'F', t: '부당승환', d: '기존 계약을 해지시키고 비슷한 새 계약을 맺게 해 고객에게 손해를 주는 행위. 비교 안내 없이 하면 제재 대상입니다.' },
+    { c: 'F', t: '특별이익 제공 금지', d: '가입을 대가로 정해진 한도를 넘는 금품·보험료 대납 등을 제공하면 안 된다는 규정.' },
+    { c: 'F', t: '대납', d: '고객이 낼 보험료를 설계사나 회사가 대신 내 주는 것. 특별이익 제공에 해당할 수 있어 금지됩니다.' },
+    { c: 'F', t: '완전판매 모니터링', d: '계약 후 보험사가 고객에게 연락해 설명을 제대로 들었는지 확인하는 절차(해피콜).' },
+    { c: 'F', t: '보험사기', d: '보험금을 부당하게 받으려고 사고를 꾸미거나 피해를 부풀리는 행위. 보험사기방지특별법으로 처벌됩니다.' },
+    { c: 'F', t: '고객확인제도', d: '자금세탁 방지를 위해 금융회사가 고객의 신원과 거래 목적 등을 확인하는 제도. KYC라고도 합니다.' },
+    { c: 'F', t: '수수료 공개 제도', d: '상품별 판매 수수료 수준을 소비자나 판매자에게 공개·안내하도록 하는 제도. 수수료 때문에 상품을 고르는 일을 줄이려는 취지입니다.' },
+    { c: 'F', t: 'IFRS17', d: '2023년 국내 도입된 국제 보험회계 기준. 부채를 시가로 평가해 보험사의 상품 구성과 시책 전략에도 영향을 줍니다.' },
+    // ── 현장에서 의외로 헷갈리는 용어 20 (2026-11-13 추가) ──
+    { c: 'A', t: '상령일', d: '보험나이가 한 살 올라가는 날. 생일에서 6개월이 지난 날로, 이날 전에 가입하면 보험료가 낮게 계산됩니다.', s: '이번 주까지 가입하시면 한 살 적은 나이로 계산돼서 보험료가 조금 저렴해요.' },
+    { c: 'A', t: '보험나이', d: '보험료 계산에 쓰는 나이. 만 나이에서 6개월 이상 지나면 한 살을 올려서 계산합니다.' },
+    { c: 'A', t: '책임개시일', d: '보험사가 보장 책임을 지기 시작하는 날. 보통 첫 보험료를 낸 날이며, 암처럼 면책기간이 있는 보장은 따로 정해집니다.' },
+    { c: 'A', t: '통지의무', d: '가입 후 직업·운전 여부 등 위험이 바뀌면 보험사에 알려야 하는 의무. 「계약 후 알릴 의무」라고도 합니다.', s: '직업이 바뀌거나 오토바이를 타시게 되면 꼭 알려 주셔야 나중에 보험금이 줄지 않아요.' },
+    { c: 'A', t: '상해급수(직업급수)', d: '직업의 사고 위험 정도에 따라 매긴 등급. 급수가 높을수록 상해보험료가 오르거나 가입 한도가 줄어듭니다.' },
+    { c: 'B', t: '예정이율', d: '보험료를 계산할 때 미리 정해 두는 운용수익률. 예정이율이 낮아지면 같은 보장의 보험료가 오릅니다.' },
+    { c: 'B', t: '공시이율', d: '저축성·연금 보험의 적립금에 붙는 변동 금리. 시장금리에 따라 매달 보험사가 정해 공시합니다.' },
+    { c: 'B', t: '최저보증이율', d: '공시이율이 아무리 떨어져도 이 아래로는 내려가지 않도록 보장하는 최소 금리.' },
+    { c: 'B', t: '해지공제', d: '계약을 일찍 해지할 때 적립금에서 미처 회수하지 못한 사업비를 떼는 것. 초기 해지환급금이 적은 이유입니다.' },
+    { c: 'B', t: '보험계약대출(약관대출)', d: '해지환급금 범위 안에서 보험사에 돈을 빌리는 것. 신용 심사 없이 빠르지만 이자가 붙고, 못 갚으면 보험금에서 차감됩니다.', s: '급하게 돈이 필요하시면 보험을 깨지 말고, 해지환급금 안에서 빌려 쓰는 방법도 있어요.' },
+    { c: 'B', t: '납입유예·중도인출', d: '유니버셜 기능이 있는 상품에서 보험료를 잠시 쉬거나(납입유예) 적립금 일부를 꺼내 쓰는(중도인출) 것. 적립금이 줄면 계약이 실효될 수 있습니다.' },
+    { c: 'B', t: '감액완납', d: '보험료를 더 내기 어려울 때 해지 대신 보장 금액을 줄이고 이후 납입을 끝내는 방법.', s: '보험료가 부담되시면 해지보다, 보장을 조금 줄이고 더 안 내셔도 되는 방법이 있어요.' },
+    { c: 'C', t: '유사암(소액암)', d: '갑상선암·제자리암·경계성종양·기타피부암 등. 일반암보다 진단비가 10~20% 수준으로 적게 정해진 경우가 많습니다.' },
+    { c: 'C', t: '제자리암(상피내암)', d: '암세포가 상피층에만 머물고 아래 조직으로 퍼지지 않은 초기 상태. 보통 유사암으로 분류돼 진단비가 적습니다.' },
+    { c: 'C', t: '경계성종양', d: '양성과 악성의 중간 성격인 종양. 병리 결과지의 분류코드에 따라 일반암·유사암 지급이 갈려 분쟁이 잦습니다.' },
+    { c: 'C', t: 'KCD(질병분류코드)', d: '한국표준질병·사인분류 코드. 진단서의 코드가 어느 보장(암·뇌·심장 등)에 해당하는지 판단하는 기준입니다.' },
+    { c: 'C', t: '후유장해 지급률', d: '사고·질병 후 남은 장해 정도를 장해분류표에 따라 %로 매긴 것. 가입금액 × 지급률로 보험금이 정해집니다.' },
+    { c: 'C', t: '급여·비급여', d: '건강보험이 일부를 내 주는 진료가 급여, 환자가 전부 내는 진료가 비급여입니다. 실손 보상 비율이 둘 사이에 다릅니다.' },
+    { c: 'C', t: '본인부담상한제', d: '1년간 낸 건강보험 본인부담금이 소득별 상한을 넘으면 넘은 금액을 건강보험공단이 돌려주는 제도. 이 환급분은 실손에서 빠질 수 있습니다.' },
+    { c: 'C', t: '산정특례', d: '암·희귀질환 등 중증 환자의 건강보험 본인부담률을 5~10%로 낮춰 주는 제도. 등록 기간이 정해져 있습니다.' }
+  ];
+
+  // ─────────────────────────────────────────────
+  // 아이콘 (클레이풍 플랫: 연라임 면 #EAF0CC · 진초록 선 #769636 · 포인트 #B5D334)
+  // ─────────────────────────────────────────────
+  var A_L = ' fill="#B5D334"', A_S = ' fill="#769636" stroke="none"', A_N = ' fill="none"', A_W = ' fill="#fff"', A_X = ' stroke="none"', A_HL = ' fill="#fff" stroke="none"';
+  function U(s) { return s + '<g stroke="none">' + s + '</g>'; } // 겹친 도형을 한 덩어리 외곽선으로
+  var DOC = '<path d="M13 5h15l10 10v24a4 4 0 0 1-4 4H13a4 4 0 0 1-4-4V9a4 4 0 0 1 4-4z"/><path d="M28 5v6a4 4 0 0 0 4 4h6"' + A_L + '/>';
+  var SHIELD = '<path d="M24 5l15 5.5V22c0 9.5-6.5 17-15 21-8.5-4-15-11.5-15-21V10.5z"/><ellipse cx="15.5" cy="15" rx="2.6" ry="1.5" transform="rotate(-35 15.5 15)"' + A_HL + '/>';
+  var COIN = '<circle cx="19" cy="28" r="13"/><circle cx="19" cy="28" r="8.5"' + A_N + ' stroke="#B5D334" stroke-width="2.2"/><path d="M14.5 24.5l2 7.5 2.5-5.5 2.5 5.5 2-7.5M13.5 28h11"' + A_N + ' stroke-width="2"/>';
+  var ICONS = {
+    hospital: '<path d="M18 13v-3a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3"' + A_N + '/><rect x="8" y="13" width="32" height="28" rx="6"/><rect x="20" y="31" width="8" height="10" rx="2"' + A_L + '/><path d="M24 17.5v9M19.5 22h9"' + A_N + ' stroke-width="3.4"/><ellipse cx="13.5" cy="18" rx="2.2" ry="1.4"' + A_HL + '/>',
+    won: '<circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="12.5"' + A_N + ' stroke="#B5D334" stroke-width="2.4"/><path d="M16.5 18.5l3.5 12 4-8.5 4 8.5 3.5-12M15 24h18"' + A_N + ' stroke-width="2.6"/><ellipse cx="14.5" cy="13.5" rx="3" ry="1.6" transform="rotate(-40 14.5 13.5)"' + A_HL + '/>',
+    bill: '<rect x="10" y="8" width="33" height="21" rx="4"' + A_L + '/><rect x="5" y="15" width="36" height="23" rx="5"/><circle cx="23" cy="26.5" r="5.5"' + A_L + '/><path d="M10.5 21v.01M35.5 32v.01"' + A_N + ' stroke-width="3.6"/>',
+    coins: '<path d="M6 31v5c0 2.6 4.5 4.6 10 4.6s10-2 10-4.6v-5"/><ellipse cx="16" cy="31" rx="10" ry="4.4"/><path d="M6 23v5c0 2.6 4.5 4.6 10 4.6s10-2 10-4.6v-5"/><ellipse cx="16" cy="23" rx="10" ry="4.4"/><path d="M6 15v5c0 2.6 4.5 4.6 10 4.6s10-2 10-4.6v-5"/><ellipse cx="16" cy="15" rx="10" ry="4.4"' + A_L + '/><circle cx="35" cy="32" r="8.5"/><circle cx="35" cy="32" r="4.4"' + A_N + ' stroke="#B5D334" stroke-width="2.2"/>',
+    coinUp: COIN + '<path d="M38 22V7M32 12.5L38 6.5l6 6"' + A_N + ' stroke-width="3.2"/>',
+    coinDown: COIN + '<path d="M38 6.5v15M32 16l6 6 6-6"' + A_N + ' stroke-width="3.2"/>',
+    calendar: '<path d="M16 5.5v7M32 5.5v7"' + A_N + ' stroke-width="3"/><rect x="7" y="10" width="34" height="31" rx="6"/><path d="M7 20v-4a6 6 0 0 1 6-6h22a6 6 0 0 1 6 6v4z"' + A_L + '/><path d="M16 5.5v7M32 5.5v7"' + A_N + ' stroke-width="3"/><rect x="13.5" y="25" width="5" height="4" rx="1.2"' + A_S + '/><rect x="21.5" y="25" width="5" height="4" rx="1.2"' + A_S + '/><rect x="29.5" y="25" width="5" height="4" rx="1.2"' + A_S + '/><rect x="13.5" y="32" width="5" height="4" rx="1.2"' + A_S + '/><rect x="21.5" y="32" width="5" height="4" rx="1.2" fill="#B5D334" stroke="none"/>',
+    shield: SHIELD + '<path d="M17 23.5l5 5 9.5-10"' + A_N + ' stroke-width="3.2"/>',
+    shieldOff: SHIELD + '<path d="M16.5 23.5h15"' + A_N + ' stroke-width="3.6"/><circle cx="36" cy="36" r="7.5"' + A_L + '/><path d="M33 33l6 6M39 33l-6 6"' + A_N + ' stroke-width="2.4"/>',
+    lock: '<path d="M16 21v-5a8 8 0 0 1 16 0v5"' + A_N + ' stroke-width="3.2"/><rect x="10" y="20" width="28" height="21" rx="6"/><circle cx="24" cy="29" r="3.2"' + A_S + '/><path d="M24 30v5"' + A_N + ' stroke-width="3"/><ellipse cx="15" cy="25" rx="2.2" ry="1.4"' + A_HL + '/>',
+    doc: DOC + '<path d="M15 22h16M15 28h16M15 34h10"' + A_N + '/>',
+    contract: DOC + '<path d="M15 21h14M15 27h9"' + A_N + '/><circle cx="32" cy="35" r="7.5"' + A_L + '/><path d="M28.8 35.2l2.2 2.2 4.2-4.6"' + A_N + ' stroke-width="2.4"/>',
+    pen: '<path d="M30 7.5l10.5 10.5L19 39.5 8 42l2.5-11z"/><path d="M8 42l2.5-11 8.5 8.5z"' + A_L + '/><path d="M26 11.5l10.5 10.5"' + A_N + '/><path d="M26 42h15"' + A_N + ' stroke="#B5D334" stroke-width="3"/>',
+    stamp: '<path d="M19 5h10a4 4 0 0 1 4 4c0 5-5 7-5 12h-8c0-5-5-7-5-12a4 4 0 0 1 4-4z"/><path d="M11 30h26v4a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3z"/><rect x="8" y="21" width="32" height="10" rx="4"' + A_L + '/><path d="M12 42.5h24"' + A_N + ' stroke="#B5D334" stroke-width="3"/>',
+    scale: '<path d="M24 11v27M9 15h30"' + A_N + ' stroke-width="3"/><path d="M9 15l-5 12M9 15l5 12M39 15l-5 12M39 15l5 12"' + A_N + ' stroke-width="2"/><path d="M3 27h12a6 5.5 0 0 1-12 0z"' + A_L + '/><path d="M33 27h12a6 5.5 0 0 1-12 0z"' + A_L + '/><circle cx="24" cy="9" r="3.6"/><rect x="14" y="37" width="20" height="5.5" rx="2.75"/>',
+    heart: '<path d="M24 41S7 31 7 19a8.5 8.5 0 0 1 17-3.5A8.5 8.5 0 0 1 41 19c0 12-17 22-17 22z"/><path d="M12.5 24h6.5l3-5 4 9 3-4h6.5"' + A_N + ' stroke-width="2.6"/><ellipse cx="13" cy="15.5" rx="2.6" ry="1.5" transform="rotate(-40 13 15.5)"' + A_HL + '/>',
+    bone: '<g transform="rotate(-40 24 24)">' + U('<rect x="12" y="20" width="24" height="8" rx="2"/><circle cx="11.5" cy="19.5" r="5"/><circle cx="11.5" cy="28.5" r="5"/><circle cx="36.5" cy="19.5" r="5"/><circle cx="36.5" cy="28.5" r="5"/>') + '<path d="M22 20l3 4-3 4"' + A_N + ' stroke="#B5D334" stroke-width="2.4"/></g>',
+    house: '<rect x="30" y="8" width="5.5" height="9" rx="1"/><path d="M11 20v17a4 4 0 0 0 4 4h18a4 4 0 0 0 4-4V20L24 10z"/><path d="M20 41v-8a4 4 0 0 1 8 0v8z"' + A_L + '/><path d="M6.5 22.5L24 8.5l17.5 14"' + A_N + ' stroke-width="3.2"/>',
+    person: '<path d="M9 42c0-8.5 6.7-13.5 15-13.5S39 33.5 39 42z"' + A_L + '/><circle cx="24" cy="16" r="8.5"/><ellipse cx="20" cy="12.5" rx="2.2" ry="1.3" transform="rotate(-35 20 12.5)"' + A_HL + '/>',
+    people: '<circle cx="32" cy="14.5" r="6"' + A_L + '/><path d="M22 36c0-6.5 4.5-10.5 10-10.5S42 29.5 42 36z"' + A_L + '/><circle cx="18" cy="17" r="7.5"/><path d="M5 42c0-7.5 5.8-12 13-12s13 4.5 13 12z"/>',
+    family: '<circle cx="14.5" cy="12.5" r="5.5"/><circle cx="33.5" cy="12.5" r="5.5"/><path d="M4.5 37c0-7 4.5-12 10-12s10 5 10 12z"/><path d="M23.5 37c0-7 4.5-12 10-12s10 5 10 12z"/><circle cx="24" cy="27" r="4.6"' + A_L + '/><path d="M16.5 42.5c0-5 3.4-8 7.5-8s7.5 3 7.5 8z"' + A_L + '/>',
+    org: '<path d="M24 16v6M11 31v-6.5a2.5 2.5 0 0 1 2.5-2.5h21a2.5 2.5 0 0 1 2.5 2.5V31M24 22v9"' + A_N + '/><rect x="16.5" y="5.5" width="15" height="11" rx="3.5"' + A_L + '/><rect x="5" y="31" width="12" height="10.5" rx="3.5"/><rect x="18" y="31" width="12" height="10.5" rx="3.5"/><rect x="31" y="31" width="12" height="10.5" rx="3.5"/>',
+    clock: '<circle cx="24" cy="24" r="17"/><path d="M24 10.5v3M37.5 24h-3M24 37.5v-3M10.5 24h3"' + A_N + ' stroke="#B5D334" stroke-width="2.8"/><path d="M24 16v8.5l6.5 4"' + A_N + ' stroke-width="3.2"/><circle cx="24" cy="24.5" r="2"' + A_S + '/>',
+    hourglass: '<path d="M15 6h18c0 9-7 12-7 18s7 9 7 18H15c0-9 7-12 7-18S15 15 15 6z"/><path d="M18.5 12h11c-1.2 3.8-3.8 6-5.5 7-1.7-1-4.3-3.2-5.5-7z"' + A_L + A_X + '/><path d="M17.5 40c1-4.8 4-7 6.5-8 2.5 1 5.5 3.2 6.5 8z"' + A_L + A_X + '/><path d="M12 6h24M12 42h24"' + A_N + ' stroke-width="3.2"/>',
+    calculator: '<rect x="10" y="5" width="28" height="38" rx="6"/><rect x="15" y="10" width="18" height="9" rx="2.5"' + A_L + '/><circle cx="17" cy="25.5" r="2.3"' + A_S + '/><circle cx="24" cy="25.5" r="2.3"' + A_S + '/><circle cx="31" cy="25.5" r="2.3"' + A_S + '/><circle cx="17" cy="31.5" r="2.3"' + A_S + '/><circle cx="24" cy="31.5" r="2.3"' + A_S + '/><circle cx="31" cy="31.5" r="2.3"' + A_S + '/><circle cx="17" cy="37.5" r="2.3"' + A_S + '/><circle cx="24" cy="37.5" r="2.3"' + A_S + '/><circle cx="31" cy="37.5" r="2.3" fill="#B5D334" stroke="none"/>',
+    chart: '<rect x="9" y="26" width="8" height="14" rx="2.5"/><rect x="20" y="18" width="8" height="22" rx="2.5"' + A_L + '/><rect x="31" y="9" width="8" height="31" rx="2.5"/><path d="M6 41.5h36"' + A_N + ' stroke-width="3"/>',
+    pie: '<path d="M22 11a15.5 15.5 0 1 0 15.5 15.5H22z"/><path d="M26 6.5a15.5 15.5 0 0 1 15.5 15.5H26z"' + A_L + '/><ellipse cx="13" cy="19" rx="2.4" ry="1.4" transform="rotate(-45 13 19)"' + A_HL + '/>',
+    percent: '<circle cx="24" cy="24" r="17"/><path d="M17 31l14-14"' + A_N + ' stroke-width="3.2"/><circle cx="17.8" cy="17.8" r="3.4"' + A_L + '/><circle cx="30.2" cy="30.2" r="3.4"' + A_L + '/>',
+    pill: '<g transform="rotate(-45 24 24)"><rect x="6" y="16.5" width="36" height="15" rx="7.5"/><path d="M24 16.5h10.5a7.5 7.5 0 0 1 0 15H24z"' + A_L + '/><ellipse cx="13" cy="20.5" rx="3" ry="1.3"' + A_HL + '/></g>',
+    bandage: '<g transform="rotate(-45 24 24)"><rect x="3" y="15.5" width="42" height="17" rx="8.5"/><rect x="16.5" y="15.5" width="15" height="17"' + A_L + '/><circle cx="21" cy="21" r="1.2"' + A_S + '/><circle cx="27" cy="21" r="1.2"' + A_S + '/><circle cx="21" cy="27" r="1.2"' + A_S + '/><circle cx="27" cy="27" r="1.2"' + A_S + '/></g>',
+    ambulance: '<path d="M30 17h7l6 8v10a2 2 0 0 1-2 2H30z"' + A_L + '/><path d="M32.5 20.5h3.5l3.5 4.5h-7z"' + A_W + '/><rect x="4" y="12" width="28" height="25" rx="4.5"/><path d="M18 18.5v10.5M12.75 23.75h10.5"' + A_N + ' stroke-width="3.4"/><circle cx="12" cy="37.5" r="4.4"' + A_S + '/><circle cx="36" cy="37.5" r="4.4"' + A_S + '/>',
+    bank: '<rect x="9" y="19" width="5" height="16" rx="1.2"/><rect x="17.5" y="19" width="5" height="16" rx="1.2"/><rect x="26" y="19" width="5" height="16" rx="1.2"/><rect x="34" y="19" width="5" height="16" rx="1.2"/><path d="M5 17.5L24 6.5l19 11z"' + A_L + '/><rect x="5" y="35" width="38" height="6.5" rx="2.5"/><circle cx="24" cy="13.5" r="2"' + A_S + '/>',
+    renew: '<circle cx="24" cy="24" r="18"' + A_X + '/><path d="M36.5 19A13 13 0 0 0 12.5 15"' + A_N + ' stroke-width="3.2"/><path d="M11 8.5V15.5h7"' + A_N + ' stroke-width="3.2"/><path d="M11.5 29a13 13 0 0 0 24 4"' + A_N + ' stroke-width="3.2"/><path d="M37 39.5V32.5h-7"' + A_N + ' stroke-width="3.2"/>',
+    phone: '<path d="M15.5 6.5h-4A4.5 4.5 0 0 0 7 11C7 28 20 41 37 41a4.5 4.5 0 0 0 4.5-4.5v-4l-8.5-3.5-4.5 4.5c-5-2.5-9-6.5-11.5-11.5l4.5-4.5z"/><path d="M27.5 7a13.5 13.5 0 0 1 13.5 13.5"' + A_N + ' stroke="#B5D334" stroke-width="3"/><path d="M27.5 13.5a7 7 0 0 1 7 7"' + A_N + ' stroke-width="2.6"/>',
+    headset: '<path d="M10 27v-4a14 14 0 0 1 28 0v4"' + A_N + ' stroke-width="3.2"/><rect x="6" y="22.5" width="9.5" height="14" rx="4"/><rect x="32.5" y="22.5" width="9.5" height="14" rx="4"/><path d="M37.5 36.5c0 4-4 6.5-9 6.5"' + A_N + '/><rect x="21" y="39.5" width="8" height="5.5" rx="2.75"' + A_L + '/>',
+    magnifier: '<path d="M30.5 30.5l10 10"' + A_N + ' stroke-width="6"/><circle cx="21" cy="21" r="14"/><circle cx="21" cy="21" r="8.5"' + A_N + ' stroke="#B5D334" stroke-width="2.4"/><ellipse cx="15" cy="14" rx="2.6" ry="1.5" transform="rotate(-40 15 14)"' + A_HL + '/>',
+    clipboard: '<rect x="9" y="8" width="30" height="35" rx="6"/><rect x="17" y="4.5" width="14" height="8" rx="3"' + A_L + '/><path d="M16 27l5.5 5.5L32 22"' + A_N + ' stroke-width="3.2"/>',
+    idcard: '<rect x="4" y="10" width="40" height="28" rx="6"/><circle cx="15.5" cy="20.5" r="4.5"' + A_L + '/><path d="M8.5 32c0-4 3-6.5 7-6.5s7 2.5 7 6.5"' + A_L + '/><path d="M27 19h11M27 25h11M27 31h6"' + A_N + '/>',
+    fingerprint: '<circle cx="24" cy="24" r="19"' + A_X + '/><path d="M10.5 16a15.5 15.5 0 0 1 27 0"' + A_N + ' stroke="#B5D334" stroke-width="2.6"/><path d="M13.5 31c-1.2-3-1.8-6.2-1.8-9a12.3 12.3 0 0 1 24.6 0c0 3.5-.3 6.5-1 9.5"' + A_N + ' stroke-width="2.6"/><path d="M18.5 36c-1.3-4-2-8.5-2-13.5a7.5 7.5 0 0 1 15 0c0 4.5-.6 9-1.8 13"' + A_N + ' stroke-width="2.6"/><path d="M24 22.5c0 6-.6 11.5-2.2 16.5"' + A_N + ' stroke-width="2.6"/>',
+    mobile: '<rect x="12" y="4" width="24" height="40" rx="6"/><rect x="16" y="10" width="16" height="25" rx="2.5"' + A_W + '/><path d="M19.5 22.5l3.5 3.5 6.5-7"' + A_N + ' stroke-width="3"/><path d="M21 39.5h6"' + A_N + ' stroke-width="3"/>',
+    piggy: U('<ellipse cx="22" cy="27" rx="15" ry="11.5"/><rect x="33" y="22" width="9" height="9.5" rx="3.5"/><rect x="11" y="32" width="6.5" height="10" rx="2.5"/><rect x="26" y="32" width="6.5" height="10" rx="2.5"/><path d="M13 20l1.5-8 8 5z"/>') + '<circle cx="29.5" cy="24" r="1.8"' + A_S + '/><path d="M17.5 19.5h8"' + A_N + ' stroke-width="2.8"/><circle cx="21.5" cy="8.5" r="5"' + A_L + '/>',
+    umbrella: '<path d="M24 25v12a4 4 0 0 1-8 0"' + A_N + ' stroke-width="3.2"/><path d="M6 25a18 18 0 0 1 36 0q-3-3.2-6 0q-3-3.2-6 0q-3-3.2-6 0q-3-3.2-6 0q-3-3.2-6 0q-3-3.2-6 0z"/><path d="M24 7.5c-5 4.5-7 10.5-6 17.5"' + A_N + ' stroke="#B5D334" stroke-width="2.4"/><path d="M24 4.5v3"' + A_N + ' stroke-width="3"/>',
+    handshake: '<rect x="2.5" y="17" width="8" height="17" rx="2.5"' + A_L + '/><rect x="37.5" y="17" width="8" height="17" rx="2.5"' + A_L + '/><path d="M10.5 20l8.5-5 5.5 3 5.5-3 7.5 5v12l-10 8-3.5-2-3.5 1.5-10-7.5z"/><path d="M24.5 18l-6 6a2.4 2.4 0 0 0 3.4 3.4l3.6-3.4 7.5 7"' + A_N + '/><path d="M19.5 33.5l3 3M23 30.5l3.5 3.5"' + A_N + ' stroke-width="2"/>',
+    megaphone: '<path d="M13 28.5l3 10.5a2.5 2.5 0 0 0 2.4 2h2.4a2 2 0 0 0 2-2.5L20 28.5"' + A_L + '/><path d="M7 18.5h8l18-9v29l-18-9H7a3 3 0 0 1-3-3v-5a3 3 0 0 1 3-3z"/><path d="M15 18.5v11"' + A_N + '/><path d="M38.5 18a8.5 8.5 0 0 1 0 12"' + A_N + ' stroke-width="3"/>',
+    trophy: '<path d="M15 11H9.5A1.5 1.5 0 0 0 8 12.5c0 5 3 8.5 8 8.5M33 11h5.5a1.5 1.5 0 0 1 1.5 1.5c0 5-3 8.5-8 8.5"' + A_N + ' stroke-width="3"/><path d="M14 6.5h20V17a10 10 0 0 1-20 0z"/><path d="M24 27v6"' + A_N + ' stroke-width="3.2"/><rect x="14.5" y="33" width="19" height="8.5" rx="3"' + A_L + '/><path d="M24 10.5l1.6 3.2 3.4.5-2.5 2.4.6 3.4-3.1-1.6-3.1 1.6.6-3.4-2.5-2.4 3.4-.5z"' + A_L + ' stroke-width="1.5"/>',
+    target: '<circle cx="22" cy="26" r="17"/><circle cx="22" cy="26" r="11"' + A_W + '/><circle cx="22" cy="26" r="5.2"' + A_L + '/><path d="M22 26L38.5 9.5"' + A_N + ' stroke-width="3.2"/><path d="M35.5 5v7.5H43"' + A_N + ' stroke-width="3"/>',
+    funnel: '<path d="M5.5 8h37L29 24v13l-10 5.5V24z"/><path d="M5.5 8h37l-4.7 5.5H10.2z"' + A_L + '/><circle cx="24" cy="18.5" r="1.6"' + A_S + '/>',
+    database: '<path d="M9 12v24c0 3.6 6.7 6.5 15 6.5S39 39.6 39 36V12"/><path d="M9 20c0 3.6 6.7 6.5 15 6.5S39 23.6 39 20M9 28c0 3.6 6.7 6.5 15 6.5S39 31.6 39 28"' + A_N + '/><ellipse cx="24" cy="12" rx="15" ry="6.5"' + A_L + '/><circle cx="33" cy="30" r="1.4"' + A_S + '/><circle cx="33" cy="38" r="1.4"' + A_S + '/>',
+    chat: '<path d="M20 27a5 5 0 0 1 5-5h12a5 5 0 0 1 5 5v7a5 5 0 0 1-5 5v4.5l-5.5-4.5H25a5 5 0 0 1-5-5z"' + A_L + '/><path d="M5 11a5 5 0 0 1 5-5h18a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5h-10l-6.5 5.5V26H10a5 5 0 0 1-5-5z"/><circle cx="13" cy="16" r="1.8"' + A_S + '/><circle cx="19" cy="16" r="1.8"' + A_S + '/><circle cx="25" cy="16" r="1.8"' + A_S + '/>',
+    gift: '<rect x="9" y="21" width="30" height="20.5" rx="4"/><path d="M24 15c-3-7-11-7-9-1.5 1 2.5 6 1.5 9 1.5s8 1 9-1.5c2-5.5-6-5.5-9 1.5z"/><rect x="6" y="15" width="36" height="8" rx="3"' + A_L + '/><path d="M24 15v26.5"' + A_N + ' stroke-width="3"/>',
+    warning: '<path d="M21 8.5a3.5 3.5 0 0 1 6 0l15 26.5A3.5 3.5 0 0 1 39 40.5H9a3.5 3.5 0 0 1-3-5.5z"/><path d="M24 18v10"' + A_N + ' stroke-width="3.6"/><circle cx="24" cy="34" r="2.2"' + A_S + '/>',
+    gavel: '<path d="M23 21l15.5 15.5"' + A_N + ' stroke-width="5.5"/><g transform="rotate(-45 21 19)"><rect x="9" y="13.5" width="24" height="11" rx="3.5"/><rect x="5.5" y="11.5" width="6" height="15" rx="2.2"' + A_L + '/><rect x="30.5" y="11.5" width="6" height="15" rx="2.2"' + A_L + '/></g><rect x="4" y="38" width="22" height="5.5" rx="2.75"' + A_L + '/>',
+    building: '<rect x="11" y="6" width="26" height="36" rx="4"/><rect x="16" y="11.5" width="5.5" height="5" rx="1.2"' + A_L + A_X + '/><rect x="26.5" y="11.5" width="5.5" height="5" rx="1.2"' + A_L + A_X + '/><rect x="16" y="20" width="5.5" height="5" rx="1.2"' + A_L + A_X + '/><rect x="26.5" y="20" width="5.5" height="5" rx="1.2"' + A_L + A_X + '/><path d="M20 42v-7.5a4 4 0 0 1 8 0V42z"' + A_L + '/><path d="M5.5 42.5h37"' + A_N + ' stroke-width="3"/>',
+    gradcap: '<path d="M13 22v8.5c0 3.3 4.9 6 11 6s11-2.7 11-6V22"/><path d="M3 18l21-9.5L45 18l-21 9.5z"' + A_L + '/><path d="M40 20.5v9.5"' + A_N + '/><circle cx="40" cy="32" r="2.6"' + A_S + '/>',
+    puzzle: '<path d="M9 13h9a4.5 4.5 0 0 1 9 0h9v9a4.5 4.5 0 0 1 0 9v9.5H27a4.5 4.5 0 0 0-9 0H9z"/><circle cx="17" cy="22" r="2"' + A_L + A_X + '/><path d="M36 22a4.5 4.5 0 0 1 0 9"' + A_N + ' stroke="#B5D334" stroke-width="2.6"/><ellipse cx="13.5" cy="18" rx="2.2" ry="1.3"' + A_HL + '/>',
+    cake: '<path d="M17 18v-5M24 18v-6M31 18v-5"' + A_N + ' stroke-width="3"/><path d="M17 6.5c1.6 1.6 1.6 3.4 0 4.6-1.6-1.2-1.6-3 0-4.6zM24 5c1.6 1.6 1.6 3.4 0 4.6-1.6-1.2-1.6-3 0-4.6zM31 6.5c1.6 1.6 1.6 3.4 0 4.6-1.6-1.2-1.6-3 0-4.6z"' + A_L + ' stroke-width="1.8"/><rect x="8" y="18" width="32" height="24" rx="5"/><path d="M8 25v-2a5 5 0 0 1 5-5h22a5 5 0 0 1 5 5v2q-4 3.5-8 0q-4 3.5-8 0q-4 3.5-8 0q-4 3.5-8 0z"' + A_L + '/>',
+    cell: '<path d="M24 5v4M38.5 11.5l-3 2.8M43 28l-4-1M33 41l-2-3.5M12 39.5l2.5-3M5 24.5h4M9.5 10.5l3 3"' + A_N + ' stroke="#B5D334" stroke-width="2.6"/><circle cx="24" cy="24.5" r="15"/><circle cx="21" cy="22.5" r="6"' + A_L + '/><circle cx="21" cy="22.5" r="2.1"' + A_S + '/><circle cx="31" cy="31" r="2"' + A_S + '/><circle cx="30.5" cy="16" r="1.6"' + A_S + '/>',
+    bed: '<path d="M6 9.5v32M42 30v11.5"' + A_N + ' stroke-width="3.2"/><rect x="6" y="24" width="36" height="9" rx="3"/><rect x="9.5" y="17" width="11" height="7" rx="3.5"' + A_L + '/><path d="M21 24v-3.5a3 3 0 0 1 3-3h15a3 3 0 0 1 3 3V24z"/><path d="M31.5 7v8M27.5 11h8"' + A_N + ' stroke="#B5D334" stroke-width="2.8"/>',
+    swap: '<circle cx="24" cy="24" r="18.5"' + A_X + '/><path d="M11 18h25M30.5 12l6 6-6 6"' + A_N + ' stroke-width="3.2"/><path d="M37 30H12M17.5 24l-6 6 6 6"' + A_N + ' stroke-width="3.2"/>',
+    board: '<path d="M24 32v6M16.5 43.5l7.5-5.5 7.5 5.5"' + A_N + ' stroke-width="3"/><rect x="5" y="7" width="38" height="25" rx="4"/><rect x="11" y="20" width="5" height="7" rx="1.2"' + A_L + ' stroke-width="1.8"/><rect x="19" y="15" width="5" height="12" rx="1.2"' + A_L + ' stroke-width="1.8"/><rect x="27" y="18" width="5" height="9" rx="1.2"' + A_L + ' stroke-width="1.8"/><path d="M35 15h3M35 20h3"' + A_N + ' stroke-width="2"/>',
+    smile: '<circle cx="24" cy="24" r="17.5"/><ellipse cx="13" cy="28" rx="3.2" ry="2.1"' + A_L + A_X + '/><ellipse cx="35" cy="28" rx="3.2" ry="2.1"' + A_L + A_X + '/><circle cx="18" cy="20.5" r="2.2"' + A_S + '/><circle cx="30" cy="20.5" r="2.2"' + A_S + '/><path d="M17.5 28c3.5 4.5 9.5 4.5 13 0"' + A_N + ' stroke-width="2.8"/>',
+    laptop: '<rect x="9" y="8.5" width="30" height="22" rx="3.5"/><rect x="13" y="12.5" width="22" height="14" rx="1.5"' + A_W + '/><path d="M16.5 22.5l5-4.5 4 3 6-5.5"' + A_N + ' stroke-width="2.4"/><path d="M4 34h40l-2.5 4.5a3 3 0 0 1-2.6 1.5H9.1a3 3 0 0 1-2.6-1.5z"' + A_L + '/>',
+    ret: '<circle cx="24" cy="24" r="18.5"' + A_X + '/><path d="M17.5 11l-7 7 7 7"' + A_N + ' stroke-width="3.2"/><path d="M10.5 18H28a9 9 0 0 1 0 18h-9"' + A_N + ' stroke-width="3.2"/>',
+    eye: '<path d="M3.5 24S11 11.5 24 11.5 44.5 24 44.5 24 37 36.5 24 36.5 3.5 24 3.5 24z"/><circle cx="24" cy="24" r="7.5"' + A_L + '/><circle cx="24" cy="24" r="3.2"' + A_S + '/><circle cx="26.5" cy="21.5" r="1.3"' + A_HL + '/>',
+    sprout: '<path d="M24 31V19"' + A_N + ' stroke-width="3"/><path d="M24 23.5c-7 0-11-4-11-10.5 7 0 11 4 11 10.5z"/><path d="M24 20.5c0-6.5 4-10.5 11-10.5 0 6.5-4 10.5-11 10.5z"' + A_L + '/><path d="M11.5 30h25l-3 10a3 3 0 0 1-2.9 2.2H17.4a3 3 0 0 1-2.9-2.2z"/><path d="M13 34h22"' + A_N + ' stroke="#B5D334" stroke-width="2.4"/>',
+    bulb: '<path d="M4.5 18h3.5M40 18h3.5M9 6.5l2.5 2.5M39 6.5L36.5 9"' + A_N + ' stroke="#B5D334" stroke-width="2.8"/><path d="M24 5a12.5 12.5 0 0 0-7.6 22.4c1.6 1.3 2.6 3 2.6 5v.6h10v-.6c0-2 1-3.7 2.6-5A12.5 12.5 0 0 0 24 5z"/><rect x="18.5" y="32" width="11" height="7.5" rx="3"' + A_L + '/><path d="M21.5 43h5"' + A_N + ' stroke-width="3"/><path d="M20.5 21l3.5 3.5 3.5-3.5"' + A_N + ' stroke-width="2.2"/><ellipse cx="18" cy="13" rx="2.4" ry="1.4" transform="rotate(-45 18 13)"' + A_HL + '/>',
+    bell: '<circle cx="24" cy="38.5" r="4.2"' + A_L + '/><path d="M24 6a12 12 0 0 0-12 12v8l-4 6.5a1.5 1.5 0 0 0 1.3 2.3h29.4a1.5 1.5 0 0 0 1.3-2.3L36 26v-8A12 12 0 0 0 24 6z"/><path d="M41.5 10.5a11 11 0 0 1 3 6.5M6.5 10.5a11 11 0 0 0-3 6.5"' + A_N + ' stroke="#B5D334" stroke-width="2.8"/><ellipse cx="17.5" cy="15" rx="2.2" ry="1.3" transform="rotate(-55 17.5 15)"' + A_HL + '/>',
+    book: '<path d="M24 13c-4-3.5-11-4.5-19-3.5v29c8-1 15 0 19 3.5z"/><path d="M24 13c4-3.5 11-4.5 19-3.5v29c-8-1-15 0-19 3.5z"' + A_L + '/><path d="M10 17c3.5-.4 7 0 9.5 1.2M10 23c3.5-.4 7 0 9.5 1.2M10 29c3.5-.4 7 0 9.5 1.2"' + A_N + ' stroke-width="2"/>',
+    sliders: '<path d="M8 12h32M8 24h32M8 36h32"' + A_N + ' stroke-width="3.2"/><circle cx="18" cy="12" r="5"/><circle cx="31" cy="24" r="5"' + A_L + '/><circle cx="15" cy="36" r="5"/>',
+    stethoscope: '<circle cx="24" cy="25" r="19"' + A_X + '/><path d="M9.5 6h5M23.5 6h5"' + A_N + ' stroke-width="3"/><path d="M12 6v10a7 7 0 0 0 14 0V6"' + A_N + ' stroke-width="3"/><path d="M19 23v6a9.5 9.5 0 0 0 19 0v-3"' + A_N + ' stroke-width="3"/><circle cx="38" cy="21.5" r="5"' + A_L + '/><circle cx="38" cy="21.5" r="1.7"' + A_S + '/>',
+    receipt: '<path d="M10 5h28v37.5l-4.7-3-4.6 3-4.7-3-4.7 3-4.6-3-4.7 3z"/><path d="M16 13h16M16 19h16M16 25h9"' + A_N + '/><rect x="25" y="29" width="8" height="5.5" rx="1.6"' + A_L + '/>',
+    mountain: '<path d="M21 41.5L32 21l13 20.5z"' + A_L + '/><path d="M3 41.5L18 15l13 26.5z"/><path d="M18 15l-4.4 7.8 2.4 1.7 2-1.7 2 1.7 2.3-1.8z"' + A_W + ' stroke-width="1.8"/><path d="M18 15V6l6.5 2.5L18 11"' + A_N + ' stroke-width="2.4"/>',
+    magnet: '<path d="M10 8h9.5v15a4.5 4.5 0 0 0 9 0V8H38v15a14 14 0 0 1-28 0z"/><path d="M10 8h9.5v6.5H10zM28.5 8H38v6.5h-9.5z"' + A_L + '/><path d="M4 30l3 1M6 37l3-1.5M44 30l-3 1M42 37l-3-1.5"' + A_N + ' stroke="#B5D334" stroke-width="2.6"/>',
+    shop: '<path d="M8.5 19v19a3 3 0 0 0 3 3h25a3 3 0 0 0 3-3V19"/><rect x="20" y="28" width="8" height="13" rx="1.5"' + A_L + '/><rect x="11.5" y="24" width="6" height="6" rx="1.5"' + A_W + '/><rect x="31" y="24" width="5.5" height="6" rx="1.5"' + A_W + '/><path d="M6 12l3-6h30l3 6v3a4.5 4.5 0 0 1-9 0 4.5 4.5 0 0 1-9 0 4.5 4.5 0 0 1-9 0 4.5 4.5 0 0 1-9 0z"' + A_L + '/>'
+  };
+  function svg(k) {
+    return '<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#EAF0CC" stroke="#769636" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[k] || ICONS.doc) + '</g></svg>';
+  }
+  var ICON_NAME = { hospital: '병원', won: '돈', bill: '지폐', coins: '동전', coinUp: '오름', coinDown: '내림', calendar: '달력', shield: '보장', shieldOff: '보장 제외', lock: '자물쇠', doc: '서류', contract: '계약서', pen: '서명', stamp: '도장', scale: '저울', heart: '심장', bone: '뼈', house: '집', person: '사람', people: '사람들', family: '가족', org: '조직', clock: '시계', hourglass: '모래시계', calculator: '계산기', chart: '차트', pie: '나누기', percent: '퍼센트', pill: '알약', bandage: '반창고', ambulance: '구급차', bank: '은행', renew: '갱신', phone: '전화', headset: '헤드셋', magnifier: '돋보기', clipboard: '체크리스트', idcard: '신분증', fingerprint: '지문', mobile: '휴대폰', piggy: '저금통', umbrella: '우산', handshake: '악수', megaphone: '확성기', trophy: '트로피', target: '과녁', funnel: '깔때기', database: 'DB', chat: '대화', gift: '선물', warning: '주의', gavel: '법', building: '빌딩', gradcap: '학사모', puzzle: '퍼즐', cake: '생일', cell: '세포', bed: '입원', swap: '바꾸기', board: '발표', smile: '미소', laptop: '노트북', ret: '되돌리기', eye: '눈', sprout: '새싹', bulb: '전구', bell: '알림', book: '약관', sliders: '조절', stethoscope: '청진기', receipt: '영수증', mountain: '산', magnet: '자석', shop: '매장' };
+
+  // 용어별 그림 (명시 지정)
+  var ICON_BY = {
+    // 계약·심사
+    '고지의무': 'clipboard', '계약전 알릴 의무': 'clipboard', '알릴의무 위반': 'warning', '통지의무': 'bell',
+    '언더라이팅': 'magnifier', '인수 심사': 'magnifier', '심사제외': 'magnifier', '부담보': 'shieldOff', '할증': 'coinUp',
+    '표준체·비표준체': 'scale', '표준체': 'person', '비표준체': 'person', '간편심사(유병자) 보험': 'pill',
+    '청약': 'contract', '청약서': 'contract', '청약서 부본': 'doc', '서면청약': 'pen', '자필서명': 'pen', '청약철회': 'ret', '품질보증해지': 'ret',
+    '실효': 'hourglass', '부활': 'renew', '전자청약': 'mobile', '전자서명': 'mobile', 'e-계약': 'mobile', '바이오인증': 'fingerprint',
+    '승인률': 'percent', '가입설계': 'calculator', '설계': 'calculator', '전산등록': 'laptop', '보정': 'pen', '신계약': 'sprout', '기존계약': 'doc',
+    '계약전환': 'swap', '경과기간': 'calendar', '초회보험료': 'won', '납입주기': 'calendar', '자동이체': 'bank', '보험계약자': 'person', '피보험자': 'person',
+    '보험증권': 'stamp', '약관': 'book', '해피콜': 'phone', '해피콜율': 'percent', '이상계약': 'warning', '상령일': 'cake', '보험나이': 'cake',
+    '책임개시일': 'calendar', '상해급수(직업급수)': 'bandage',
+    // 보장·상품
+    '주계약·특약': 'puzzle', '특약': 'puzzle', '갱신형': 'renew', '비갱신형': 'lock', '갱신률': 'percent', '면책기간': 'shieldOff', '감액기간': 'pie',
+    '납입면제': 'umbrella', '실손의료보험': 'hospital', '종합의료보험': 'hospital', '종신보험': 'family', '정기보험': 'calendar',
+    '무해지·저해지 상품': 'coinDown', '무해약보험': 'coinDown', '순수보장형': 'shield', '해지환급금': 'piggy', '해약환급금': 'piggy', '만기환급금': 'piggy',
+    '변액보험': 'chart', '유니버셜 기능': 'sliders', '유니버셜보험': 'sliders', '납입유예·중도인출': 'sliders', '가입금액': 'won', '보험료': 'bill',
+    '상해보험': 'ambulance', '연금보험': 'coins', 'CI보험': 'heart', '보증보험': 'handshake', '책임준비금': 'bank', '예정이율': 'percent',
+    '공시이율': 'chart', '최저보증이율': 'shield', '해지공제': 'coinDown', '보험계약대출(약관대출)': 'bank', '감액완납': 'coinDown',
+    // 청구·보상
+    '미청구 보험금': 'magnifier', '소멸시효': 'hourglass', '손해사정': 'calculator', '손사': 'calculator', '지급심사': 'clipboard', '의료자문': 'stethoscope',
+    '수익자': 'won', '계약자·피보험자': 'people', '비례보상': 'pie', '진단비': 'stethoscope', '입원일당·수술비': 'bed', '지정대리청구': 'family',
+    '유사암(소액암)': 'cell', '제자리암(상피내암)': 'cell', '경계성종양': 'cell', 'KCD(질병분류코드)': 'doc', '후유장해 지급률': 'bone',
+    '급여·비급여': 'receipt', '본인부담상한제': 'receipt', '산정특례': 'percent',
+    // 수수료·조직
+    'GA': 'building', '원수사': 'bank', '1200%룰': 'percent', '분급': 'coins', '분할 수수료': 'pie', '7년 분급': 'calendar', '선지급': 'clock', '환수': 'ret',
+    '유지율': 'chart', '계약유지율': 'chart', '시책': 'gift', '법인시책': 'gift', '보너스수당': 'gift', '썹시드': 'gift', '상생시책': 'handshake',
+    '오버라이드(OR)': 'org', '오버라이드': 'org', 'SM': 'org', '슈퍼바이저': 'org', '정착지원금': 'sprout', '위촉·해촉': 'idcard', '설계사 코드': 'idcard', 'GA코드': 'idcard',
+    '설계사': 'person', '모집인': 'person', '재무설계사': 'person', 'FP': 'person', 'IFA': 'person', 'RC': 'person', 'AP': 'person', 'TC': 'headset',
+    'BM': 'building', '설계매니저': 'calculator', '오피스장': 'building', '원장': 'building', '총무': 'clipboard', '백오피스': 'laptop', '업무보고': 'clipboard',
+    '총판(GA본사)': 'building', '지사': 'building', '직영 지사': 'building', '독립 지사': 'building', '기업형 GA': 'building', '유니온(연합)형 GA': 'people', '자회사형 GA': 'building',
+    '에이전시 계약': 'handshake', '유지보증': 'handshake', '양수도': 'swap', '이관': 'swap', '계약이관': 'swap', '이직': 'swap', '먹튀': 'warning',
+    '수수료': 'coins', '초회 수수료': 'coins', '익월 수수료': 'calendar', '유지 수수료': 'coins', '수금 수수료': 'coins', '잔여 수수료': 'coins',
+    '수수료 등급': 'chart', '지급률': 'percent', '수금율': 'percent', '환수율': 'percent', '컨설팅수당': 'chat', '커미션 스플릿': 'pie', '쉐어 (share)': 'pie', 'MS': 'pie',
+    'GWP': 'chart', '성적': 'chart', '환산': 'calculator', '환산성적': 'calculator', '경정': 'calculator', '랭킹제': 'trophy', 'MDRT': 'trophy', 'COT': 'trophy', 'TOT': 'trophy',
+    'LOS': 'calendar', '롤오버': 'renew', 'AFPK': 'gradcap', 'CFP': 'gradcap', '투권인': 'idcard',
+    // 영업 현장
+    '보장분석': 'magnifier', '리모델링': 'house', '보장리모델링': 'house', 'DB': 'database', '퍼미션 DB': 'database', '상담DB': 'database', '원천 DB': 'database', '제휴DB': 'database', '이관 DB': 'database',
+    '아웃바운드 퍼미션DB': 'database', '인바운드 퍼미션DB': 'database', 'CRM': 'database', 'CIS': 'database', '니즈 환기': 'bulb', '니즈분석': 'target', '리드': 'target', '클로징': 'handshake', '감다': 'handshake',
+    '소개 영업': 'people', '롤플레잉': 'people', '조인웍': 'people', '후보군': 'people', '리쿠르팅': 'sprout', '아웃바운드·인바운드': 'phone', '아웃바운드': 'phone', '인바운드': 'phone', '팔로업': 'phone',
+    '스크립트': 'doc', 'FAB': 'chat', '종합재무설계': 'pie', '사후관리': 'heart', '상품비교표': 'scale', '컨설팅툴': 'laptop', '프리젠테이션': 'board', '세일즈교육': 'gradcap',
+    '소금광산': 'mountain', '동반계약': 'family', '업세일링': 'coinUp', '크로스셀링': 'puzzle', '유치': 'magnet', '퍼미션': 'clipboard', '퍼널': 'funnel', '전환율': 'funnel', '컨버전율': 'funnel',
+    '프로모션': 'megaphone', '보험샵': 'shop', '법인영업': 'building', 'B2B': 'building', 'B2C': 'person', '하이브리드 영업': 'laptop', 'OMO': 'laptop', 'CM 채널': 'laptop', '컴슈랑스': 'laptop', 'TM': 'headset', 'CS': 'smile',
+    // 법·규정
+    '금소법': 'gavel', '불완전판매': 'warning', '설명의무': 'chat', '적합성 원칙': 'scale', '부당승환': 'warning', '승환': 'swap', '꺾기': 'warning', '보험사기': 'warning',
+    '특별이익 제공 금지': 'gift', '대납': 'bill', '완전판매 모니터링': 'eye', '모니터링': 'eye', '수수료 공개 제도': 'eye', '인콜 모니터링': 'phone',
+    '고객확인제도': 'idcard', 'KYC': 'idcard', 'IFRS17': 'calculator'
+  };
+  // 이름 지정이 없을 때: 키워드 규칙 → 분야 기본
+  var ICON_RULES = [
+    [/암|종양|세포/, 'cell'], [/병원|의료|입원|수술|진단/, 'hospital'], [/심장|뇌|CI/, 'heart'], [/골절|장해|뼈/, 'bone'], [/상해|사고|직업급수/, 'bandage'],
+    [/면책|부담보|제외/, 'shieldOff'], [/보장|보증/, 'shield'], [/갱신|부활|롤오버/, 'renew'], [/환급|적립|저축/, 'piggy'], [/연금/, 'coins'],
+    [/수수료|수당|시책|지원금/, 'coins'], [/이율|률|율|%/, 'percent'], [/기간|일$|나이|주기|시효/, 'calendar'], [/약관/, 'book'], [/청약|계약서|증권/, 'contract'],
+    [/서명/, 'pen'], [/심사|분석|조회/, 'magnifier'], [/DB|데이터/, 'database'], [/전화|콜|TM/, 'phone'], [/온라인|전자|모바일|채널/, 'laptop'],
+    [/법|규정|금지|의무/, 'gavel'], [/위반|사기|불완전|부당/, 'warning'], [/GA|지사|본사|법인/, 'building'], [/설계사|인$|자$/, 'person'],
+    [/교육|자격/, 'gradcap'], [/가족|자녀|배우자/, 'family'], [/보험료|금액|돈|보험금/, 'won']
+  ];
+  var CAT_ICON = { A: 'contract', B: 'shield', C: 'won', D: 'coins', E: 'chat', F: 'gavel' };
+  function iconFor(x) {
+    if (ICON_BY[x.t]) return ICON_BY[x.t];
+    for (var i = 0; i < ICON_RULES.length; i++) if (ICON_RULES[i][0].test(x.t)) return ICON_RULES[i][1];
+    return CAT_ICON[x.c] || 'doc';
+  }
+
+  // ─────────────────────────────────────────────
+  // 쉽게 말하면 (한 줄 풀이)
+  // ─────────────────────────────────────────────
+  var EASY = {
+    '고지의무': '가입 전에 건강·직업 질문에 솔직하게 답하는 것.',
+    '계약전 알릴 의무': '「고지의무」의 새 이름. 가입 전 질문에 사실대로 답하기.',
+    '알릴의무 위반': '가입 전 질문에 사실과 다르게 답해서 생기는 문제.',
+    '통지의무': '가입 후에 직업·운전처럼 위험이 바뀌면 보험사에 알리기.',
+    '언더라이팅': '이 사람을 받아도 될지, 어떤 조건으로 받을지 보험사가 따져 보는 심사.',
+    '인수 심사': '보험사가 「이 계약 받을까?」를 판단하는 심사.',
+    '부담보': '특정 부위·질병만 빼고 가입하는 조건.',
+    '할증': '위험이 높아서 보험료를 더 내는 조건.',
+    '표준체·비표준체': '보통 위험이면 표준체, 위험이 높아 조건이 붙으면 비표준체.',
+    '간편심사(유병자) 보험': '아픈 적이 있어도 질문 몇 개로 가입하는 보험(대신 더 비쌈).',
+    '청약': '「이 보험 들겠습니다」 하고 신청하는 것.',
+    '청약철회': '가입하고 마음이 바뀌면 정해진 기간 안에 이유 없이 취소하기.',
+    '품질보증해지': '약관·설명을 제대로 못 받았을 때 계약을 취소하고 돈을 돌려받는 제도.',
+    '실효': '보험료가 밀려서 보험이 잠시 멈춘 상태.',
+    '부활': '멈춘(실효된) 보험을 밀린 보험료 내고 다시 살리기.',
+    '전자청약': '종이 없이 휴대폰·태블릿으로 가입 신청하기.',
+    '심사제외': '일부 심사를 건너뛰는 계약·담보를 부르는 말(회사마다 기준 다름).',
+    '승인률': '신청한 계약 중 심사를 통과한 비율.',
+    '가입설계': '고객에게 맞는 보장과 보험료를 미리 짜 보는 것.',
+    '설계': '가입설계를 줄여 부르는 말.',
+    '청약서': '가입 신청 내용과 서명이 담긴 신청서.',
+    '청약서 부본': '고객이 보관하는 청약서 사본.',
+    '자필서명': '본인이 직접 하는 서명. 대신 하면 안 돼요.',
+    '바이오인증': '지문·얼굴로 본인 확인하기.',
+    'e-계약': '종이 없이 전자로 맺는 계약.',
+    '전산등록': '청약 내용을 회사 시스템에 입력하기.',
+    '보정': '서류에 빠지거나 틀린 부분을 채우고 고치기.',
+    '신계약': '새로 맺은 계약.',
+    '계약전환': '해지하지 않고 같은 회사 다른 상품으로 바꾸기.',
+    '경과기간': '계약하고 지금까지 지난 기간.',
+    '초회보험료': '처음 내는 보험료. 보통 이게 들어가야 보장이 시작돼요.',
+    '납입주기': '보험료를 얼마마다 내는지(매달·매년 등).',
+    '보험계약자': '계약을 맺고 보험료를 내는 사람.',
+    '피보험자': '보험으로 보장받는 사람.',
+    '보험증권': '보험에 가입했다는 증명서.',
+    '약관': '보험의 규칙이 다 적힌 기준서.',
+    '해피콜': '가입 후 보험사가 「설명 잘 들으셨나요?」 확인하는 전화.',
+    '해피콜율': '해피콜을 문제없이 마친 비율.',
+    '이상계약': '가짜 계약이 의심되거나 비정상적인 계약.',
+    '상령일': '보험나이가 한 살 오르는 날. 그 전에 가입하면 보험료가 낮아요.',
+    '보험나이': '보험료 계산용 나이. 생일 6개월이 지나면 한 살 더해요.',
+    '책임개시일': '보험이 실제로 지켜 주기 시작하는 날.',
+    '상해급수(직업급수)': '직업이 얼마나 위험한지 매긴 등급.',
+    '주계약·특약': '기본 보장(주계약)에 원하는 보장(특약)을 붙이는 구조.',
+    '특약': '기본 보장에 덧붙이는 추가 보장.',
+    '갱신형': '정해진 기간마다 보험료가 다시 계산되는 상품.',
+    '비갱신형': '납입 기간 내내 보험료가 그대로인 상품.',
+    '면책기간': '가입 직후 일정 기간은 그 보장을 안 해 주는 기간.',
+    '감액기간': '가입 초기에 보험금을 일부만 주는 기간.',
+    '납입면제': '큰 병에 걸리면 보험료는 안 내도 보장은 계속되는 기능.',
+    '실손의료보험': '실제로 쓴 병원비를 돌려주는 보험.',
+    '종신보험': '평생 언제든 사망하면 보험금이 나가는 보험.',
+    '정기보험': '정해진 나이·기간까지만 사망을 보장하는 보험.',
+    '무해지·저해지 상품': '중간에 깨면 돌려받는 돈이 없거나 적은 대신 싼 상품.',
+    '순수보장형': '돌려받는 돈 없이 보장만 받는 상품.',
+    '해지환급금': '중간에 해지할 때 돌려받는 돈.',
+    '만기환급금': '보험이 끝날 때 돌려받는 돈.',
+    '변액보험': '보험료 일부를 투자해서 결과에 따라 금액이 달라지는 보험.',
+    '유니버셜 기능': '보험료를 쉬거나 더 내고, 모은 돈을 꺼내 쓸 수 있는 기능.',
+    '가입금액': '사고 나면 받기로 정한 보장 금액.',
+    '보험료': '보장받는 대가로 내는 돈.',
+    '갱신률': '갱신할 때 보험료가 바뀌는 비율.',
+    '해약환급금': '해지환급금과 같은 말.',
+    '무해약보험': '해약하면 돌려받는 돈이 없는 대신 싼 보험.',
+    '종합의료보험': '진단·입원·수술 보장을 한데 모은 보험.',
+    '상해보험': '갑작스러운 사고로 다쳤을 때 보장하는 보험.',
+    '연금보험': '모아 두었다가 노후에 나눠 받는 보험.',
+    'CI보험': '중대한 병에 걸리면 사망보험금 일부를 미리 받는 보험.',
+    '보증보험': '약속을 못 지키면 보험사가 대신 물어 주는 보험.',
+    '책임준비금': '보험사가 앞으로 줄 보험금을 위해 쌓아 둔 돈.',
+    '예정이율': '보험료를 계산할 때 쓰는 예상 수익률. 낮아지면 보험료가 올라요.',
+    '공시이율': '적립금에 붙는, 매달 바뀌는 이자율.',
+    '최저보증이율': '이자율이 아무리 떨어져도 이만큼은 보장하는 바닥 금리.',
+    '해지공제': '일찍 해지할 때 떼는 비용. 초기 환급금이 적은 이유예요.',
+    '보험계약대출(약관대출)': '해지환급금 안에서 보험사에 빌리는 돈.',
+    '납입유예·중도인출': '보험료를 잠깐 쉬거나 모은 돈을 꺼내 쓰기.',
+    '감액완납': '보장을 줄이는 대신 보험료 납입을 끝내는 방법.',
+    '미청구 보험금': '받을 수 있는데 아직 안 받은 보험금.',
+    '소멸시효': '보험금 청구 마감 기한(사고일부터 3년).',
+    '손해사정': '사고를 조사해서 보험금이 얼마인지 계산하는 일.',
+    '지급심사': '청구한 보험금이 나갈 수 있는지 보험사가 확인하는 절차.',
+    '의료자문': '보험사가 다른 의사에게 의견을 물어보는 것.',
+    '수익자': '보험금을 받는 사람.',
+    '계약자·피보험자': '돈 내는 사람(계약자)과 보장받는 사람(피보험자).',
+    '비례보상': '같은 보장이 여러 개면 실제 손해를 나눠서 주는 방식.',
+    '진단비': '병을 진단받으면 한 번에 받는 돈.',
+    '입원일당·수술비': '입원한 날수만큼, 수술 종류만큼 받는 돈.',
+    '손사': '손해사정을 줄인 말.',
+    '지정대리청구': '본인이 청구하기 어려울 때 미리 정한 가족이 대신 청구하기.',
+    '유사암(소액암)': '갑상선암처럼 진단비가 적게 나오는 암 묶음.',
+    '제자리암(상피내암)': '퍼지기 전 아주 초기의 암. 보통 유사암으로 봐요.',
+    '경계성종양': '양성과 악성 사이의 종양. 분류에 따라 지급이 갈려요.',
+    'KCD(질병분류코드)': '병마다 붙는 코드. 어떤 보장에 해당하는지 판단 기준.',
+    '후유장해 지급률': '다치고 남은 장해 정도를 %로 매긴 것.',
+    '급여·비급여': '건강보험이 도와주는 진료(급여)와 전부 내가 내는 진료(비급여).',
+    '본인부담상한제': '1년 병원비 본인부담이 상한을 넘으면 넘은 만큼 돌려주는 제도.',
+    '산정특례': '중증 환자의 병원비 본인부담을 크게 낮춰 주는 제도.',
+    'GA': '여러 보험사 상품을 함께 파는 독립 대리점.',
+    '원수사': '상품을 실제로 만든 보험회사.',
+    '1200%룰': '첫해 수수료·시책을 월 보험료의 12배 안으로 묶는 규칙.',
+    '분급': '수수료를 몇 해에 나눠 받는 것.',
+    '선지급': '나중에 받을 돈을 미리 당겨 받는 것.',
+    '환수': '계약이 일찍 깨지면 받은 수수료를 돌려내는 것.',
+    '유지율': '계약이 깨지지 않고 이어지는 비율.',
+    '시책': '수수료 말고 추가로 주는 인센티브.',
+    '오버라이드(OR)': '팀원 실적에 따라 관리자가 받는 수수료.',
+    '정착지원금': '회사를 옮긴 설계사가 자리 잡도록 주는 지원금.',
+    '위촉·해촉': '설계사로 등록(위촉)하고 해지(해촉)하는 것.',
+    '설계사 코드': '설계사 고유 번호. 계약과 수수료가 여기에 연결돼요.',
+    'GA코드': '그 보험사 상품을 팔 수 있게 해 주는 등록 코드.',
+    '모집인': '보험 가입을 중개하는 사람을 넓게 부르는 말.',
+    'TC': '전화로 상담·판매하는 상담원.',
+    'SM': '설계사 조직을 이끄는 영업 관리자.',
+    'BM': '지점장(문맥에 따라 비즈니스 모델).',
+    '백오피스': '영업 뒤에서 등록·정산·민원을 처리하는 업무.',
+    '총판(GA본사)': '여러 지사를 거느린 GA 본사.',
+    '직영 지사': '본사가 직접 돈 대고 운영하는 지사.',
+    '독립 지사': '지사장이 비용과 손익을 책임지는 지사.',
+    '기업형 GA': '본사가 한 회사처럼 직접 관리하는 GA.',
+    '유니온(연합)형 GA': '독립 지사들이 한 이름 아래 모인 GA.',
+    '자회사형 GA': '보험사가 자회사로 세운 GA.',
+    '에이전시 계약': '보험 모집을 맡기고 맡는 위탁 계약.',
+    '양수도': '조직이나 관리권을 넘겨주고 넘겨받기.',
+    '이관': '담당을 다른 사람·조직으로 넘기기.',
+    '계약이관': '계약 관리 담당을 다른 설계사로 바꾸기.',
+    '먹튀': '지원금·수수료만 받고 바로 떠나는 행태.',
+    '수수료': '계약을 모집·유지한 대가로 받는 돈.',
+    '초회 수수료': '첫 보험료 기준으로 처음 받는 수수료.',
+    '익월 수수료': '계약한 다음 달에 받는 수수료.',
+    '유지 수수료': '계약이 이어지는 동안 회차별로 받는 수수료.',
+    '수금 수수료': '보험료가 계속 들어오게 관리한 대가.',
+    '잔여 수수료': '나눠 받는 중에 아직 안 받은 수수료.',
+    '분할 수수료': '분급과 같은 말.',
+    '7년 분급': '수수료를 7년에 걸쳐 나눠 받는 방식.',
+    '수수료 등급': '실적·경력에 따라 수수료율이 달라지는 등급.',
+    '지급률': '보험료 대비 수수료가 몇 % 나오는지.',
+    '커미션 스플릿': '함께 한 계약의 수수료를 비율대로 나누기.',
+    'MS': '시장 점유율.',
+    'GWP': '보험사가 거둬들인 전체 보험료.',
+    '환산': '서로 다른 보험료를 같은 기준으로 바꿔 비교하기.',
+    '환산성적': '같은 기준으로 바꿔 계산한 실적.',
+    '경정': '잘못 계산된 실적·수수료를 바로잡기.',
+    '수금율': '내야 할 보험료 중 실제로 들어온 비율.',
+    '환수율': '지급된 수수료 중 다시 돌려낸 비율.',
+    'MDRT': '실적이 뛰어난 설계사들의 국제 모임.',
+    'COT': 'MDRT 기준의 3배 이상 실적 등급.',
+    'TOT': 'MDRT 기준의 6배 이상, 최고 등급.',
+    'AFPK': '재무설계 기본 자격증.',
+    'CFP': 'AFPK보다 위의 국제 재무설계 자격증.',
+    '투권인': '펀드 등 투자상품을 권유할 수 있는 자격.',
+    '보장분석': '고객 보험을 모아서 부족한 것·겹치는 것 찾기.',
+    '리모델링': '기존 보험을 고객에게 맞게 다시 짜기.',
+    '보장리모델링': '리모델링과 같은 말.',
+    'DB': '상담할 고객 명단.',
+    '퍼미션 DB': '연락·정보 활용에 동의한 고객 명단.',
+    '니즈 환기': '고객이 몰랐던 보장 필요성을 일깨우기.',
+    '클로징': '상담을 마무리하고 가입 결정을 받는 단계.',
+    '아웃바운드·인바운드': '내가 먼저 연락(아웃) vs 고객이 먼저 연락(인).',
+    '팔로업': '상담·계약 후 다시 연락해 관계 이어 가기.',
+    '리쿠르팅': '새 설계사를 데려와 조직 키우기.',
+    '니즈분석': '고객에게 필요한 보장의 종류와 크기 파악하기.',
+    '사후관리': '가입 후에도 계속 챙겨 드리는 활동.',
+    'FAB': '특징 → 장점 → 고객 이익 순서로 설명하는 화법.',
+    '조인웍': '선배가 신입과 함께 고객을 만나는 동행 영업.',
+    '동반계약': '가족 계약까지 함께 맺기.',
+    '업세일링': '보장을 늘리거나 위 등급 상품을 권하기.',
+    '크로스셀링': '다른 종류의 상품을 함께 권하기.',
+    '리드': '상담으로 이어질 수 있는 잠재 고객.',
+    '퍼미션': '고객에게 받은 연락·정보 활용 동의.',
+    '원천 DB': '처음 수집된 그대로의 고객 명단.',
+    '이관 DB': '다른 설계사에게서 넘겨받은 고객 명단.',
+    '퍼널': '단계가 진행될수록 고객 수가 줄어드는 깔때기 흐름.',
+    '전환율': '상담·DB가 실제 계약으로 이어진 비율.',
+    '컨버전율': '전환율과 같은 말.',
+    'OMO': '온라인과 오프라인 영업을 하나로 잇기.',
+    'TM': '전화로 상담·판매하는 채널.',
+    'CM 채널': '고객이 인터넷으로 직접 가입하는 채널.',
+    'B2B': '기업을 상대로 하는 영업.',
+    'B2C': '개인 고객을 상대로 하는 영업.',
+    'CRM': '고객 정보·상담 이력을 관리해 관계를 이어 가기.',
+    '금소법': '금융 상품을 팔 때 지켜야 할 6대 원칙을 담은 법.',
+    '불완전판매': '제대로 설명 안 하거나 안 맞는 상품을 판 것.',
+    '설명의무': '중요한 내용을 고객이 이해하도록 설명할 의무.',
+    '적합성 원칙': '고객 상황에 맞지 않는 상품은 권하지 않기.',
+    '부당승환': '기존 보험을 깨고 비슷한 새 보험으로 바꿔 손해를 주는 것.',
+    '특별이익 제공 금지': '가입 대가로 정해진 한도를 넘는 선물·돈을 주면 안 된다는 규정.',
+    '대납': '고객 보험료를 대신 내 주는 것(금지).',
+    '완전판매 모니터링': '판매가 제대로 됐는지 보험사가 고객에게 확인하는 절차.',
+    '모니터링': '판매 과정이 규정대로였는지 점검하기.',
+    '승환': '기존 보험을 깨고 비슷한 새 보험으로 갈아타기.',
+    '꺾기': '대출 등을 조건으로 보험 가입을 강요하는 것(금지).',
+    '보험사기': '보험금을 노리고 사고를 꾸미거나 부풀리는 범죄.',
+    '고객확인제도': '금융회사가 고객 신원과 거래 목적을 확인하는 제도.',
+    'KYC': '고객확인제도의 영어 약자.',
+    '수수료 공개 제도': '상품별 판매 수수료 수준을 공개하는 제도.',
+    'IFRS17': '보험사 회계 기준. 상품 구성과 시책에도 영향을 줘요.'
+  };
+
+  // 함께 보면 좋은 용어 (명시 연결)
+  var REL = {
+    '면책기간': ['감액기간', '책임개시일', '부담보'], '감액기간': ['면책기간', '책임개시일'], '책임개시일': ['면책기간', '초회보험료'],
+    '갱신형': ['비갱신형', '갱신률'], '비갱신형': ['갱신형'], '갱신률': ['갱신형'],
+    '해지환급금': ['해약환급금', '무해지·저해지 상품', '해지공제'], '만기환급금': ['순수보장형', '해지환급금'],
+    '유사암(소액암)': ['제자리암(상피내암)', '경계성종양', '진단비'], '제자리암(상피내암)': ['유사암(소액암)', '경계성종양'], '경계성종양': ['유사암(소액암)', 'KCD(질병분류코드)'],
+    '고지의무': ['계약전 알릴 의무', '알릴의무 위반', '통지의무'], '계약전 알릴 의무': ['고지의무', '알릴의무 위반'], '알릴의무 위반': ['고지의무'], '통지의무': ['고지의무', '상해급수(직업급수)'],
+    '청약철회': ['품질보증해지', '청약'], '품질보증해지': ['청약철회'], '실효': ['부활', '감액완납', '납입유예·중도인출'], '부활': ['실효'],
+    '보험나이': ['상령일'], '상령일': ['보험나이'], '급여·비급여': ['실손의료보험', '본인부담상한제', '산정특례'], '실손의료보험': ['급여·비급여', '비례보상'],
+    '승환': ['부당승환', '꺾기'], '부당승환': ['승환', '리모델링', '상품비교표'], '리모델링': ['보장분석', '부당승환'],
+    '분급': ['7년 분급', '분할 수수료', '환수'], '환수': ['환수율', '분급', '유지율'], '유지율': ['환수', '계약유지율'],
+    '예정이율': ['공시이율', '최저보증이율'], '공시이율': ['예정이율', '최저보증이율'], '최저보증이율': ['공시이율'],
+    'DB': ['퍼미션 DB', '원천 DB', '상담DB'], '퍼널': ['전환율', 'DB'], 'MDRT': ['COT', 'TOT'], 'COT': ['MDRT', 'TOT'], 'TOT': ['MDRT', 'COT'],
+    '해피콜': ['완전판매 모니터링', '해피콜율'], '손해사정': ['손사', '지급심사', '의료자문'], '언더라이팅': ['인수 심사', '부담보', '할증'],
+    '부담보': ['언더라이팅', '면책기간'], '할증': ['언더라이팅', '상해급수(직업급수)'], '납입면제': ['보험료'], '진단비': ['KCD(질병분류코드)', '유사암(소액암)'],
+    '불완전판매': ['설명의무', '적합성 원칙', '금소법'], '금소법': ['설명의무', '적합성 원칙', '불완전판매'], '시책': ['1200%룰', '수수료'], '1200%룰': ['시책', '수수료'],
+    '상해급수(직업급수)': ['통지의무', '할증', '상해보험'], '보장리모델링': ['리모델링', '보장분석', '부당승환'], '입원일당·수술비': ['진단비', '실손의료보험', '종합의료보험'],
+    '종합재무설계': ['재무설계사', '니즈분석', '보장분석'], '보험샵': ['GA', '하이브리드 영업'], '보장분석': ['리모델링', '니즈분석', '미청구 보험금'], '니즈분석': ['니즈 환기', '보장분석', '종합재무설계'],
+    '종합의료보험': ['실손의료보험', '진단비', '입원일당·수술비'], '상해보험': ['상해급수(직업급수)', '후유장해 지급률']
+  };
+
+  // ─────────────────────────────────────────────
+  // 초성 검색
+  var CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  var BASE = { 'ㄲ': 'ㄱ', 'ㄸ': 'ㄷ', 'ㅃ': 'ㅂ', 'ㅆ': 'ㅅ', 'ㅉ': 'ㅈ' };
+  function cho(s) { return Array.from(s).map(function (ch) { var c = ch.charCodeAt(0) - 0xAC00; return c >= 0 && c < 11172 ? CHO[Math.floor(c / 588)] : ch; }).join(''); }
+  function firstIndex(t) { var c = cho(t.charAt(0)); return /[ㄱ-ㅎ]/.test(c) ? (BASE[c] || c) : (/[0-9]/.test(c) ? '0-9' : 'A-Z'); }
+  var isCho = function (q) { return /^[ㄱ-ㅎ\s]+$/.test(q); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  function hl(text, q) {
+    if (!q || isCho(q)) return esc(text);
+    var i = text.toLowerCase().indexOf(q.toLowerCase());
+    return i < 0 ? esc(text) : esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+
+  TERMS.forEach(function (x) { x.k = firstIndex(x.t); x.ch = cho(x.t).replace(/\s/g, ''); x.ic = iconFor(x); x.e = EASY[x.t] || ''; });
+  TERMS.sort(function (a, b) { return a.t.localeCompare(b.t, 'ko'); });
+  var BY = {};
+  TERMS.forEach(function (x, i) { x.id = i; BY[x.t] = x; });
+
+  // 관련 용어: 명시 연결 → 설명 속 ‘참고’ 용어 → 같은 분야·같은 그림
+  TERMS.forEach(function (x) {
+    var out = [], seen = {}; seen[x.t] = 1;
+    function add(t) { if (out.length < 4 && BY[t] && !seen[t]) { seen[t] = 1; out.push(BY[t]); } }
+    (REL[x.t] || []).forEach(add);
+    var m, re = /[‘「]([^’」]+)[’」]/g;
+    while ((m = re.exec(x.d + ' ' + (x.s || ''))) !== null) add(m[1]);
+    TERMS.forEach(function (y) { if (y.ic === x.ic && y.c === x.c) add(y.t); });
+    x.rel = out;
+  });
+
+  var state = { q: '', cat: 'all' };
+  var $ = function (s) { return document.querySelector(s); };
+
+  function match(x) {
+    if (state.cat !== 'all' && x.c !== state.cat) return false;
+    var q = state.q.trim();
+    if (!q) return true;
+    if (isCho(q)) return x.ch.indexOf(q.replace(/\s/g, '')) >= 0;
+    var ql = q.toLowerCase();
+    return x.t.toLowerCase().indexOf(ql) >= 0 || x.d.toLowerCase().indexOf(ql) >= 0 || x.e.toLowerCase().indexOf(ql) >= 0;
+  }
+
+  var SAY_ICO = '<svg viewBox="0 0 48 48" aria-hidden="true"><g fill="#EAF0CC" stroke="#769636" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13a6 6 0 0 1 6-6h24a6 6 0 0 1 6 6v13a6 6 0 0 1-6 6H22l-9 8v-8h-1a6 6 0 0 1-6-6z"/><circle cx="16" cy="19.5" r="2.2" fill="#769636" stroke="none"/><circle cx="24" cy="19.5" r="2.2" fill="#769636" stroke="none"/><circle cx="32" cy="19.5" r="2.2" fill="#B5D334" stroke="none"/></g></svg>';
+
+  function relHtml(x, mode) {
+    if (!x.rel.length) return '';
+    return '<div class="rel"><span>함께 보면 좋아요</span>' + x.rel.map(function (y) {
+      return '<button type="button" data-' + mode + '="' + y.id + '" title="' + esc(y.t) + ' 보기">' + svg(y.ic) + esc(y.t) + '</button>';
+    }).join('') + '</div>';
+  }
+  function bodyHtml(x, q) {
+    return (x.e ? '<p class="ez"><b>쉽게 말하면</b>' + hl(x.e, q) + '</p>' : '') +
+      '<p class="def">' + hl(x.d, q) + '</p>' +
+      (x.s ? '<div class="say">' + SAY_ICO + '<div><small>고객에게 이렇게</small>“' + esc(x.s) + '”</div></div>' : '');
+  }
+
+  function renderChips() {
+    var keys = ['all'].concat(Object.keys(C));
+    $('#chips').innerHTML = keys.map(function (k) {
+      var n = k === 'all' ? TERMS.length : TERMS.filter(function (x) { return x.c === k; }).length;
+      return '<button type="button" class="chip' + (k === 'all' ? ' all' : '') + '" data-cat="' + k + '" aria-pressed="' + (state.cat === k) + '">' +
+        (k === 'all' ? '' : '<span class="ci">' + svg(CAT_ICON[k]) + '</span>') + (k === 'all' ? '전체' : C[k]) + '<small>' + n + '</small></button>';
+    }).join('');
+  }
+  $('#chips').addEventListener('click', function (e) {
+    var b = e.target.closest('.chip'); if (!b) return;
+    state.cat = b.dataset.cat; renderChips(); render();
+  });
+
+  var HINTS = ['면책기간', 'ㅅㅅ', '실손', '부담보', '유사암'];
+  $('#hint').innerHTML = '<span>이렇게 찾아보세요</span>' + HINTS.map(function (h) { return '<button type="button" data-q="' + h + '">' + h + '</button>'; }).join('');
+
+  // 오늘의 용어 (날짜마다 바뀜, 「고객에게 이렇게」가 있는 용어 중에서)
+  var POOL = TERMS.filter(function (x) { return x.s && x.e; });
+  var dayN = Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 864e5);
+  var TODAY = POOL[(dayN * 7) % POOL.length];
+  function renderToday() {
+    var show = false; // 오늘의 용어 삭제 (2026-11-13 요청)
+    $('#today').innerHTML = show ? '<article class="today" data-open="' + TODAY.id + '" tabindex="0" role="button" aria-label="오늘의 용어 ' + esc(TODAY.t) + ' 자세히 보기">' +
+      '<div class="big">' + svg(TODAY.ic) + '</div><div><span class="lb"><i></i>오늘의 용어</span><h2>' + esc(TODAY.t) + '</h2><p class="ez" style="background:none;padding:0">' + esc(TODAY.e) + '</p></div>' +
+      '<span class="more">자세히 ›</span></article>' : '';
+  }
+
+  var ORDER = ['0-9', 'ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ', 'A-Z'];
+  function render() {
+    var list = TERMS.filter(match);
+    var q = state.q.trim();
+    $('#count').innerHTML = '용어 <b>' + list.length + '</b>개';
+    $('#searchBox').classList.toggle('has', !!state.q);
+    renderToday();
+    var groups = {};
+    list.forEach(function (x) { (groups[x.k] = groups[x.k] || []).push(x); });
+    $('#index').innerHTML = ORDER.filter(function (k) { return k !== '0-9' && k !== 'A-Z' || groups[k]; }).map(function (k) {
+      return '<button type="button" data-go="' + k + '"' + (groups[k] ? '' : ' disabled') + '>' + (k === '0-9' ? '#' : k === 'A-Z' ? 'A' : k) + '</button>';
+    }).join('');
+    if (!list.length) {
+      $('#list').innerHTML = '<div class="empty"><div class="big">' + svg('magnifier') + '</div><h3>「' + esc(q) + '」에 맞는 용어가 없어요</h3>' +
+        '<p>다른 단어나 초성(예: ㅁㅊㄱㄱ)으로 찾아보거나,<br>분야를 「전체」로 바꿔 보세요.</p>' +
+        '<div class="hint">' + HINTS.map(function (h) { return '<button type="button" data-q="' + h + '">' + h + '</button>'; }).join('') + '</div>' +
+        '<button type="button" class="btn" data-reset>처음으로 돌아가기</button></div>';
+      return;
+    }
+    $('#list').innerHTML = ORDER.filter(function (k) { return groups[k]; }).map(function (k) {
+      return '<section class="group"><h2 id="g-' + k + '"><span>' + (k === '0-9' ? '#' : k === 'A-Z' ? 'A' : k) + '</span>' + (k === '0-9' ? '숫자' : k === 'A-Z' ? '영문' : '') + '</h2><div class="grid">' +
+        groups[k].map(function (x) {
+          return '<article class="term" id="t-' + x.id + '" data-open="' + x.id + '" tabindex="0" aria-label="' + esc(x.t) + '">' +
+            '<div class="term-head"><span class="ico" title="' + ICON_NAME[x.ic] + '">' + svg(x.ic) + '</span><div class="ttl"><h3>' + hl(x.t, q) + '</h3><span class="tag">' + C[x.c] + '</span></div></div>' +
+            bodyHtml(x, q) + relHtml(x, 'jump') + '</article>';
+        }).join('') + '</div></section>';
+    }).join('');
+    if (bar) onScroll();
+  }
+
+  // 관련 용어로 이동 (목록에 없으면 필터를 풀고 이동)
+  function jumpTo(id) {
+    var x = TERMS[id];
+    if (!match(x)) { state.q = ''; $('#q').value = ''; state.cat = 'all'; renderChips(); render(); }
+    var el = document.getElementById('t-' + id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    setTimeout(function () { try { el.focus({ preventScroll: true }); } catch (e) {} }, 400);
+  }
+
+  // 자세히 보기 시트
+  var lastFocus = null;
+  function openSheet(id) {
+    var x = TERMS[id];
+    if (!$('#sheetBg').classList.contains('open')) lastFocus = document.activeElement;
+    $('#sheet').innerHTML = '<button type="button" class="x" data-close aria-label="닫기"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>' +
+      '<div class="top"><div class="big">' + svg(x.ic) + '</div><div><h2 id="sheetTitle">' + esc(x.t) + '</h2><span class="tag">' + C[x.c] + '</span></div></div>' +
+      '<div class="body">' + bodyHtml(x, '') + relHtml(x, 'open') + '</div>';
+    $('#sheetBg').classList.add('open'); $('#sheetBg').setAttribute('aria-hidden', 'false');
+    $('#sheet').scrollTop = 0;
+    $('#sheet').querySelector('.x').focus();
+  }
+  function closeSheet() {
+    $('#sheetBg').classList.remove('open'); $('#sheetBg').setAttribute('aria-hidden', 'true');
+    if (lastFocus && lastFocus.focus) try { lastFocus.focus({ preventScroll: true }); } catch (e) {}
+  }
+  $('#sheetBg').addEventListener('click', function (e) {
+    if (e.target === this || e.target.closest('[data-close]')) return closeSheet();
+    var r = e.target.closest('[data-open]'); if (r) openSheet(+r.dataset.open);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('#sheetBg').classList.contains('open')) closeSheet();
+    else if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.term, .today')) { e.preventDefault(); openSheet(+e.target.dataset.open); }
+  });
+
+  // 목록 클릭 처리 (카드 → 자세히, 관련칩 → 이동, 가나다, 빈 상태 버튼)
+  document.querySelector('.wrap').addEventListener('click', function (e) {
+    var t = e.target;
+    var j = t.closest('[data-jump]'); if (j) { e.stopPropagation(); return jumpTo(+j.dataset.jump); }
+    var g = t.closest('[data-go]'); if (g) { var el = document.getElementById('g-' + g.dataset.go); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    var h = t.closest('[data-q]'); if (h) { $('#q').value = h.dataset.q; state.q = h.dataset.q; render(); return; }
+    if (t.closest('[data-reset]')) { $('#q').value = ''; state.q = ''; state.cat = 'all'; renderChips(); render(); $('#q').focus(); return; }
+    if (window.getSelection && String(window.getSelection()).length > 1) return; // 글자 드래그 복사 중엔 열지 않음
+    var o = t.closest('.term[data-open], .today[data-open]'); if (o) openSheet(+o.dataset.open);
+  });
+
+  $('#q').addEventListener('input', function (e) { state.q = e.target.value; render(); });
+  $('#clearQ').addEventListener('click', function () { $('#q').value = ''; state.q = ''; render(); $('#q').focus(); });
+
+  // 스티키 바 그림자 + 현재 위치한 가나다 표시
+  var bar = $('#indexBar'), ticking = false;
+  function onScroll() {
+    ticking = false;
+    bar.classList.toggle('stuck', bar.getBoundingClientRect().top <= 0.5);
+    var cur = null, hs = document.querySelectorAll('.group h2');
+    for (var i = 0; i < hs.length; i++) { if (hs[i].getBoundingClientRect().top < 90) cur = hs[i].id.slice(2); else break; }
+    $('#index').querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.go === cur); });
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+
+  $('#heroIco').innerHTML = svg('book');
+  function setPh() { $('#q').placeholder = window.innerWidth <= 600 ? '용어 검색 (초성도 돼요: ㅁㅊㄱㄱ)' : '용어나 설명을 검색하세요 (초성도 돼요: ㅁㅊㄱㄱ)'; }
+  window.addEventListener('resize', setPh); setPh();
+  renderChips(); render(); onScroll();
+})();
+</script>
+</body>
+</html>
