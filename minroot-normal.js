@@ -1,15 +1,18 @@
-/* 미니루트 전체모드 추가 기능 — 오늘 날씨 · 오늘의 운세
+/* 미니루트 전체모드 추가 기능 — 오늘의 날씨 · 오늘의 운세
  * ROOT 세일즈허브 대시보드와 같은 API 사용:
  *   날씨  GET /v1/fc/weather?lat=&lon=   (위치 기본값: 서울 중구 명동 — ROOT 기본값과 같음)
  *   운세  GET /v1/fc/fortune/today
- * ROOT 로그인 정보(token)가 있어야 받아옴 → 미니루트 실행(localhost:5173)에서 ROOT 에 한 번 로그인하면 표시됨.
+ * ROOT 로그인 정보(token)가 있으면 ROOT 값을 쓰고, 없거나 실패하면 대체:
+ *   날씨 → Open-Meteo(무료·키 없음, 브라우저에서 직접 호출)
+ *   운세 → 서버 /api/fortune(Gemini, 하루 1번 공유) → 그것도 안 되면 날짜로 고르는 로컬 운세(같은 날은 같은 운세)
+ * 명세: docs/루티한마디_AI연동명세.md
  * 색: 키 #EAF0CC · 서브 #769636 · 테두리 #B5D334 (+ 원래 글씨·바탕)
  */
 (function () {
   'use strict';
   var API = 'https://api-fc-root.sbt-root.com/api';
   var LAT = 37.5636, LON = 126.9826;
-  var cache = { weather: null, fortune: null, loading: false, error: '', tab: 'sales' };
+  var cache = { weather: null, fortune: null, loading: false, error: '', tab: 'sales', wxDone: false };
 
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var token = function () { try { return localStorage.getItem('token') || ''; } catch (e) { return ''; } };
@@ -73,6 +76,7 @@
     '.mr-ft-lucky{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}' +
     '.mr-ft-lucky .mr-pill b{color:#769636}' +
     '.mr-sw{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.12)}' +
+    '.mr-src{margin-top:8px;font-size:11px;color:#9aa08f;text-align:right}' +
     '.mr-empty{color:#7a8270;font-size:13.5px;line-height:1.6;padding:10px 0}' +
     '.mr-skel{height:14px;border-radius:7px;background:linear-gradient(90deg,#F2F4EC,#E9EDDF,#F2F4EC);background-size:200% 100%;animation:mrsk 1.2s infinite;margin:8px 0}' +
     '@keyframes mrsk{to{background-position:-200% 0}}' +
@@ -83,7 +87,7 @@
 
   function weatherHtml() {
     var w = cache.weather;
-    if (!w) return cache.loading ? skeleton : '<div class="mr-empty">' + esc(cache.error || 'ROOT에 로그인하면 오늘 날씨가 보여요.') + '</div>';
+    if (!w) return cache.loading ? skeleton : '<div class="mr-empty">' + esc(cache.error || '날씨 정보를 불러오는 중이에요.') + '</div>';
     return '<div class="mr-wx-main"><div class="mr-wx-ico" aria-hidden="true">' + weatherIcon(w.iconCode) + '</div>' +
         '<div><div class="mr-wx-temp">' + round(w.temperature) + '<sup>°C</sup></div>' +
         '<div class="mr-wx-desc">' + esc(w.description || '') + '</div>' +
@@ -99,7 +103,8 @@
         '<span class="mr-pill">' + gradeDot(w.pm25Grade) + '초미세먼지 ' + esc(w.pm25Grade || '-') + '</span>' +
         (w.sunriseAt ? '<span class="mr-pill">🌅 ' + esc(w.sunriseAt) + ' · 🌇 ' + esc(w.sunsetAt || '') + '</span>' : '') +
       '</div>' +
-      '<div class="mr-tip">' + esc(fieldTip(w)) + '</div>';
+      '<div class="mr-tip">' + esc(fieldTip(w)) + '</div>' +
+      (w.source === 'open-meteo' ? '<div class="mr-src">날씨 제공: Open-Meteo</div>' : '');
   }
 
   var TABS = [['sales', '영업운'], ['relationship', '대인운'], ['wealth', '재물운'], ['health', '건강운']];
@@ -112,7 +117,7 @@
   }
   function fortuneHtml() {
     var f = cache.fortune;
-    if (!f) return cache.loading ? skeleton : '<div class="mr-empty">' + esc(cache.error || 'ROOT에 로그인하면 오늘의 운세가 보여요.') + '</div>';
+    if (!f) return skeleton;
     if (f.status && f.status !== 'ready') return '<div class="mr-empty">오늘의 운세를 만들고 있어요. 곧 자동으로 보여드릴게요 ✨</div>';
     var c = f.luckyColor || {};
     return '<div class="mr-ft-top">' + ring(f.overallScore) +
@@ -207,11 +212,11 @@
     var pool = r < 0.35 ? tg : r < 0.65 ? (wg.length ? wg : ig) : (ig.length ? ig : tg);
     return pool[Math.floor(Math.random() * pool.length)];
   }
-  function greetReady() { return (cache.weather || cache.error || !token()) && ai.done; }
+  function greetReady() { return cache.wxDone && ai.done; }
   setTimeout(function () { if (!greetFinal) { greetFinal = true; greetPicked = chooseGreet(); applyGreet(); } }, 3000);
   function applyGreet() {
     var lead = document.querySelector('#workspace .lead'); if (!lead) return;
-    if (!ai.started && (cache.weather || cache.error || !token())) loadAiGreet();   // 날씨를 받은 뒤(또는 못 받으면) AI 인사말 요청
+    if (!ai.started && cache.wxDone) loadAiGreet();   // 날씨(ROOT 또는 Open-Meteo)를 받은 뒤(또는 못 받으면) AI 인사말 요청
     if (!greetFinal && greetReady()) { greetFinal = true; greetPicked = chooseGreet(); }
     var h2 = lead.querySelector('.bubble h2'), img = lead.querySelector('img.ruti');
     if (!greetPicked) { if (h2) h2.style.opacity = '0'; return; }   // 날씨·AI 한마디를 받아 문구를 고를 때까지 잠깐 숨김(문구가 바뀌며 깜빡이지 않게)
@@ -228,39 +233,139 @@
     var w = cache.weather, f = cache.fortune;
     var loc = w && w.location ? w.location.replace(/^서울특별시\s*/, '') : '';
     box.innerHTML =
-      '<section class="mr-card" aria-label="오늘 날씨"><div class="mr-card-head"><h3>오늘 날씨</h3>' + (loc ? '<small>📍 ' + esc(loc) + '</small>' : '') + '</div>' + weatherHtml() + '</section>' +
+      '<section class="mr-card" aria-label="오늘의 날씨"><div class="mr-card-head"><h3>오늘의 날씨</h3>' + (loc ? '<small>📍 ' + esc(loc) + '</small>' : '') + '</div>' + weatherHtml() + '</section>' +
       '<section class="mr-card" aria-label="오늘의 운세"><div class="mr-card-head"><h3>오늘의 운세</h3>' + (f && f.fortuneDate ? '<small>' + esc(f.fortuneDate.replace(/-/g, '.')) + '</small>' : '') + '</div>' + fortuneHtml() + '</section>';
     box.querySelectorAll('[data-ft]').forEach(function (b) {
       b.addEventListener('click', function () { cache.tab = b.dataset.ft; paint(); });
     });
   }
 
-  function load() {
-    var tk = token();
-    if (!tk) { paint(); return; }
-    if (cache.loading || (cache.weather && cache.fortune)) { paint(); return; }
-    cache.loading = true; paint();
-    var H = { headers: { Authorization: 'Bearer ' + tk } };
-    var get = function (path) { return fetch(API + path, H).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { return j && (j.content || j.data); }); };
-    Promise.allSettled([get('/v1/fc/weather?lat=' + LAT + '&lon=' + LON), get('/v1/fc/fortune/today')]).then(function (rs) {
-      cache.loading = false;
-      if (rs[0].status === 'fulfilled') cache.weather = rs[0].value;
-      if (rs[1].status === 'fulfilled') cache.fortune = rs[1].value;
-      // 오늘 운세를 ROOT 가 아직 만드는 중이면 8초 간격으로 최대 8번 다시 불러옴
-      if (cache.fortune && cache.fortune.status && cache.fortune.status !== 'ready') pollFortune(get, 0);
-      if (!cache.weather && !cache.fortune) cache.error = '정보를 불러오지 못했어요. ROOT 로그인 상태를 확인해 주세요.';
-      paint();
+  // ── 날씨 대체: Open-Meteo (무료·키 없음·CORS 허용) → ROOT 날씨와 같은 모양으로 바꿔 같은 카드에 표시 ──
+  // weather_code(WMO) → [한국어 상태, OpenWeather 아이콘 코드(카드 아이콘·날씨 문구가 이 코드를 씀)]
+  function wmo(c) {
+    return c === 0 ? ['맑음', '01'] : c <= 2 ? ['구름 조금', '02'] : c === 3 ? ['흐림', '04'] : c <= 48 ? ['안개', '50']
+      : c <= 67 ? ['비', '10'] : c <= 77 ? ['눈', '13'] : c <= 82 ? ['소나기', '09'] : c <= 86 ? ['눈', '13'] : ['뇌우', '11'];
+  }
+  // 미세먼지 등급(환경부 기준) PM10: 30·80·150 / PM2.5: 15·35·75
+  var pmGrade = function (v, a, b, c) { return v == null || isNaN(v) ? '' : v <= a ? '좋음' : v <= b ? '보통' : v <= c ? '나쁨' : '매우나쁨'; };
+  var hhmm = function (s) { return s ? String(s).slice(11, 16) : ''; };
+  function openMeteo() {
+    var q = 'latitude=' + LAT + '&longitude=' + LON + '&timezone=Asia%2FSeoul';
+    var fq = '/v1/forecast?' + q + '&wind_speed_unit=ms&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code,is_day,precipitation' +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&forecast_days=1';
+    var json = function (u) {   // 4초 안에 안 오면 포기(연결이 멈춘 채 매달리지 않게)
+      var ctl = window.AbortController ? new AbortController() : null; if (ctl) setTimeout(function () { ctl.abort(); }, 4000);
+      return fetch(u, ctl ? { signal: ctl.signal } : {}).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { return j && j.current ? j : Promise.reject('empty'); }); };
+    // 기본 주소(api.)가 일부 망에서 막히는 경우가 있어 같은 형식을 주는 예비 주소(historical-forecast-api.)도 함께 불러 먼저 온 쪽을 씀
+    var fc = new Promise(function (ok, no) {
+      var left = 2, fail = function () { if (--left === 0) no('weather'); };
+      json('https://api.open-meteo.com' + fq).then(ok, fail);
+      json('https://historical-forecast-api.open-meteo.com' + fq).then(ok, fail);
+    });
+    var air = fetch('https://air-quality-api.open-meteo.com/v1/air-quality?' + q + '&current=pm10,pm2_5').then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    return Promise.all([fc, air]).then(function (rs) {
+      var c = rs[0].current || {}, d = rs[0].daily || {}, a = (rs[1] && rs[1].current) || {}, s = wmo(+c.weather_code);
+      var first = function (k) { return d[k] && d[k].length ? d[k][0] : null; };
+      return {
+        source: 'open-meteo', location: '서울특별시 중구 명동', description: s[0], iconCode: s[1] + (c.is_day === 0 ? 'n' : 'd'),
+        temperature: c.temperature_2m, feelsLike: c.apparent_temperature, humidity: c.relative_humidity_2m, windSpeed: c.wind_speed_10m,
+        minTemp: first('temperature_2m_min'), maxTemp: first('temperature_2m_max'), rainProbability: first('precipitation_probability_max'),
+        pm10Grade: pmGrade(a.pm10, 30, 80, 150), pm25Grade: pmGrade(a.pm2_5, 15, 35, 75), sunriseAt: hhmm(first('sunrise')), sunsetAt: hhmm(first('sunset'))
+      };
     });
   }
 
+  // ── 운세 대체 2단계: 서버 /api/fortune(Gemini, 하루 1번 공유) → 실패하면 날짜로 고르는 로컬 운세 ──
+  var FT_LOCAL = {
+    advice: ['작은 안부가 큰 인연으로 이어지는 날이에요', '미뤄 둔 연락 하나가 반가운 답으로 돌아와요', '차분하게 설명할수록 신뢰가 쌓이는 하루예요', '오늘은 듣는 쪽에 설 때 기회가 보여요',
+      '꼼꼼히 챙긴 준비가 빛을 보는 날이에요', '새로운 사람과의 대화가 즐거운 하루예요', '오랜 고객님과의 인연이 더 깊어지는 날이에요', '서두르지 않아도 흐름이 자연스럽게 풀려요',
+      '웃으며 건넨 한마디가 오래 기억되는 날이에요', '정리하고 다듬기 좋은 하루예요', '작은 약속을 지키면 큰 믿음이 따라와요', '질문 하나가 상담의 문을 열어 주는 날이에요',
+      '마음이 가벼울수록 발걸음도 가벼운 날이에요', '꾸준함이 조금씩 결과로 보이기 시작해요', '오늘 만나는 분께 배울 점이 많은 날이에요', '계획을 한 번 더 점검하면 마음이 든든해요',
+      '따뜻한 말 한마디가 좋은 흐름을 만들어요', '오전의 집중이 하루 전체를 편하게 해 줘요', '반가운 소식을 기다려 봐도 좋은 날이에요', '혼자보다 함께할 때 일이 잘 풀려요',
+      '새 방법을 시도해 보기 좋은 하루예요', '한 템포 쉬어 가면 더 멀리 갈 수 있어요', '기록해 둔 메모가 도움이 되는 날이에요', '진심을 담은 연락이 통하는 하루예요',
+      '차근차근 쌓아 온 노력이 인정받는 날이에요', '밝은 표정이 가장 좋은 인사가 되는 날이에요', '오래 고민한 일에 실마리가 보여요', '주변을 챙기면 그 마음이 돌아오는 날이에요',
+      '작은 성취를 스스로 칭찬해 주세요', '여유를 갖고 대할수록 대화가 편안해져요', '첫인상이 특히 빛나는 날이에요', '마무리를 깔끔하게 하면 내일이 가벼워요'],
+    overall: ['큰 굴곡 없이 차분하게 흘러가는 하루예요. 하던 일을 꾸준히 이어 가면 좋아요.', '조금씩 풀려 가는 흐름이에요. 서두르지 않아도 괜찮아요.', '주변의 도움이 자연스럽게 모이는 날이에요. 고마운 마음을 표현해 보세요.',
+      '집중력이 좋은 날이에요. 미뤄 둔 일을 하나 정리해 보세요.', '사람 운이 따르는 날이에요. 만남을 즐겁게 이어 가 보세요.', '작은 변화가 기분 좋은 하루를 만들어요.',
+      '평소보다 여유를 갖고 움직이면 실수가 줄어드는 날이에요.', '기분 좋은 대화가 하루의 힘이 되는 날이에요.'],
+    sales: ['처음 만나는 고객님과도 대화가 술술 풀리는 흐름이에요.', '오래 연락 못 한 고객님께 안부를 전하기 좋은 날이에요.', '설명은 짧고 쉽게, 질문은 넉넉하게 하면 상담이 편안해져요.',
+      '서두르기보다 고객님 이야기를 끝까지 듣는 게 도움이 돼요.', '준비한 자료를 한 번 더 살펴보면 자신감이 붙는 날이에요.', '소개로 이어지는 인연이 생기기 좋은 흐름이에요.',
+      '오전에 중요한 통화를 해 두면 오후가 한결 여유로워요.', '고객님의 작은 고민을 기억해 두면 다음 만남이 수월해져요.', '결과보다 관계를 다지는 데 마음을 쓰면 좋은 날이에요.',
+      '미뤄 둔 후속 연락을 챙기기 좋은 날이에요.', '차분한 말투가 신뢰를 주는 날이에요.', '새로운 고객층을 만나 볼 용기가 나는 하루예요.'],
+    relationship: ['동료와 나누는 짧은 대화에서 좋은 아이디어를 얻을 수 있어요.', '가까운 사람에게 고마운 마음을 표현해 보세요.', '오해가 있었다면 가볍게 풀기 좋은 날이에요.',
+      '먼저 건넨 인사가 분위기를 밝게 만들어요.', '상대의 입장을 한 번 더 생각하면 대화가 부드러워져요.', '오랜 친구에게서 반가운 연락이 올 수 있어요.',
+      '칭찬 한마디가 관계를 더 가깝게 해 줘요.', '말하기보다 들어 주는 쪽이 더 큰 힘이 되는 날이에요.', '함께 식사하며 나누는 이야기가 즐거운 날이에요.',
+      '도움을 청하면 생각보다 쉽게 손을 내밀어 줘요.', '약속 시간을 넉넉히 잡으면 서로 편안해요.', '웃음이 많은 자리에 좋은 기운이 모이는 날이에요.'],
+    wealth: ['지출 내역을 한 번 정리해 보기 좋은 날이에요.', '충동적인 결정보다 하루 더 생각해 보는 게 좋아요.', '작은 절약 습관이 마음을 든든하게 해 줘요.',
+      '미뤄 둔 서류나 영수증을 정리하기 좋은 날이에요.', '큰 결정은 서두르지 말고 차분히 비교해 보세요.', '계획한 범위 안에서 쓰면 마음이 편안한 하루예요.',
+      '장기적인 목표를 다시 세워 보기 좋은 날이에요.', '꼭 필요한 것과 갖고 싶은 것을 나눠 보세요.', '정리해 둔 계획이 앞으로 도움이 될 거예요.', '쓰는 것보다 점검하는 데 마음을 두면 좋은 날이에요.'],
+    health: ['물을 자주 마시면 오후가 한결 가벼워요.', '오래 앉아 있었다면 잠깐 일어나 몸을 풀어 보세요.', '바깥 공기를 쐬며 짧게 걸으면 기분이 맑아져요.',
+      '일찍 잠자리에 들면 내일이 개운해요.', '따뜻한 차 한 잔으로 쉬어 가는 여유를 가져 보세요.', '어깨와 목을 자주 풀어 주면 피로가 덜해요.',
+      '식사는 천천히, 꼭꼭 씹어 드세요.', '화면을 오래 봤다면 눈을 잠깐 쉬게 해 주세요.', '계단을 이용하며 가볍게 몸을 움직여 보세요.', '깊게 숨을 쉬며 마음을 가라앉히기 좋은 날이에요.'],
+    color: [['연두', '#B5D334'], ['하늘색', '#7EC8E3'], ['노랑', '#F2C94C'], ['주황', '#F2994A'], ['베이지', '#E8D8B0'], ['흰색', '#FFFFFF'], ['남색', '#2F4A7A'], ['분홍', '#F4A7B9'], ['보라', '#9B7EDE'], ['초록', '#4CAF50']],
+    direction: ['동쪽', '서쪽', '남쪽', '북쪽', '동남쪽', '동북쪽', '남서쪽', '북서쪽'],
+    time: ['오전 9~11시', '오전 10~12시', '오후 1~3시', '오후 2~4시', '오후 3~5시', '오후 4~6시', '저녁 6~8시']
+  };
+  function localFortune() {
+    var n = new Date(), day = n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2);
+    var hash = function (s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+    var pick = function (k) { var a = FT_LOCAL[k]; return a[hash(day + '|' + k) % a.length]; };   // 같은 날은 항상 같은 값
+    var c = pick('color');
+    return { source: 'local', fortuneDate: day, overallScore: 70 + hash(day + '|score') % 25, advice: pick('advice'), overall: pick('overall'),
+      sales: pick('sales'), relationship: pick('relationship'), wealth: pick('wealth'), health: pick('health'),
+      luckyColor: { name: c[0], hex: c[1] }, luckyNumber: 1 + hash(day + '|num') % 45, luckyDirection: pick('direction'), luckyTime: pick('time') };
+  }
+  function serverFortune() {
+    var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 5000);
+    return Promise.reject(new Error('preview'))
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (f) { clearTimeout(tm); if (!f || !f.advice) throw new Error('empty'); return f; }, function (e) { clearTimeout(tm); throw e; });
+  }
+
+  // 날씨: ROOT(로그인 시) → Open-Meteo / 운세: ROOT(로그인 시) → /api/fortune → 로컬 운세
+  function load() {
+    if (cache.loading || (cache.weather && cache.fortune)) { paint(); return; }
+    cache.loading = true; paint();
+    var tk = token();
+    var H = { headers: { Authorization: 'Bearer ' + tk } };
+    var get = function (path) { return fetch(API + path, H).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (j) { var v = j && (j.content || j.data); return v || Promise.reject('empty'); }); };
+    var wxP = (tk ? get('/v1/fc/weather?lat=' + LAT + '&lon=' + LON) : Promise.reject('no token')).catch(openMeteo)
+      .then(function (w) { cache.weather = w; }, function () { cache.error = '날씨 정보를 불러오지 못했어요. 잠시 후 다시 확인해 주세요.'; })
+      .then(function () { cache.wxDone = true; paint(); });
+    var ftP = (tk ? get('/v1/fc/fortune/today') : Promise.reject('no token'))
+      .then(function (f) {
+        if (rootReady(f)) return f;
+        // ROOT 운세가 아직 없으면(만드는 중·failed) 대체 운세를 바로 보여 주고, 뒤에서 ROOT 운세를 기다렸다가 ready 가 되면 바꿔 끼움
+        // failed(예: 「응답 대기 시간 초과 (90초)」)면 ROOT 공식 재시도(POST …/fortune/today/retry)를 하루 1번만 부름 — ROOT 화면 fortune.retry 와 같은 방식
+        if (f.status === 'failed') retryFortune(get); else pollFortune(get, 0);
+        return Promise.reject('root fortune not ready');
+      })
+      .catch(function () { return serverFortune().catch(localFortune); })
+      .then(function (f) { cache.fortune = f; paint(); });
+    Promise.all([wxP, ftP]).then(function () { cache.loading = false; paint(); });
+  }
+
+  // ROOT 운세가 카드에 쓸 수 있는 상태인지 (200 이어도 status:"failed"·필드 null 인 경우가 있음)
+  function rootReady(f) { return !!(f && (!f.status || f.status === 'ready') && f.advice); }
+  // ROOT 운세가 ready 가 될 때까지 8초 간격 최대 8번 다시 불러옴 → ready 면 대체 운세 자리에 ROOT 운세로 교체
   function pollFortune(get, n) {
     if (n >= 8) return;
     setTimeout(function () {
       get('/v1/fc/fortune/today').then(function (f) {
-        cache.fortune = f; paint();
-        if (!f || f.status !== 'ready') pollFortune(get, n + 1);
+        if (rootReady(f)) { cache.fortune = f; paint(); return; }
+        if (f && f.status === 'failed') return;   // 다시 실패하면 대체 운세 그대로
+        pollFortune(get, n + 1);
       }).catch(function () { pollFortune(get, n + 1); });
     }, 8000);
+  }
+  // ROOT 운세 재시도: 하루 1번만(localStorage mr_fortune_retry = 날짜). 부른 뒤 폴링
+  function retryFortune(get) {
+    var n = new Date(), day = n.getFullYear() + '-' + (n.getMonth() + 1) + '-' + n.getDate(), done = '';
+    try { done = localStorage.getItem('mr_fortune_retry') || ''; } catch (e) {}
+    if (done === day) return;
+    try { localStorage.setItem('mr_fortune_retry', day); } catch (e) {}
+    fetch(API + '/v1/fc/fortune/today/retry', { method: 'POST', headers: { Authorization: 'Bearer ' + token() } })
+      .then(function (r) { if (r.ok) pollFortune(get, 0); }).catch(function () {});
   }
 
   function mount() {

@@ -1036,7 +1036,7 @@
     dateEl.className = 'mr-hd-date';
     dateEl.textContent = (now.getMonth() + 1) + '월 ' + now.getDate() + '일 (' + '일월화수목금토'[now.getDay()] + ')';
     const wxEl = document.createElement('span');
-    wxEl.className = 'mr-hd-wx'; wxEl.title = '오늘 날씨';
+    wxEl.className = 'mr-hd-wx'; wxEl.title = '오늘의 날씨';
     wxEl.innerHTML = '<span class="mr-hd-wx-ico">🌤️</span><span class="mr-hd-wx-desc">날씨</span>';
     const tpEl = document.createElement('span');
     tpEl.className = 'mr-hd-temp'; tpEl.textContent = '--°';
