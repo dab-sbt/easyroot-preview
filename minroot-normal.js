@@ -132,40 +132,53 @@
 
   // ── 루티 인사말: 시간대·날씨에 따라 들어올 때마다 바뀜 (루티 그림도 문구에 맞춰 바뀜) ──
   var RUTI = { calendar: 'assets/ruti/calendar.webp', work: 'assets/ruti/work.webp', review: 'assets/ruti/review.webp', saving: 'assets/ruti/saving.webp', health: 'assets/ruti/health.webp', wave: 'assets/ruti/wave.png' };
+  // 대체 문구도 「근거 + 건넴」: 앞에 시간대·요일·날씨 수치·이달의 이슈 같은 근거, 뒤에 이어지는 안부·응원·가벼운 제안 (명세: docs/루티한마디_AI연동명세.md)
   var GREET_TIME = {
-    dawn: [['좋은 아침이에요! 오늘 컨디션은 어떠세요?', 'wave'], ['일찍 나오셨네요. 아침은 챙겨 드셨어요?', 'health'], ['상쾌한 아침이에요. 오늘 일정은 여유 있으세요?', 'calendar']],
-    morning: [['오전 잘 보내고 계세요? 커피 한 잔 하셨어요?', 'wave'], ['오늘 점심 메뉴는 정하셨어요? 벌써 궁금해요', 'health'], ['오전엔 집중이 잘 되죠? 무리하지 마세요', 'review'], ['오늘 만나실 고객님, 좋은 이야기 나누길 바라요', 'work']],
-    lunch: [['점심 맛있게 드셨어요? 오후도 같이 힘내요!', 'wave'], ['든든하게 드셨어요? 잠깐 쉬어 가도 괜찮아요', 'health'], ['식사 후에 가볍게 산책 어떠세요?', 'health']],
-    afternoon: [['나른한 오후죠? 커피 한 잔 하고 쉬어 가요', 'health'], ['오후도 잘 보내고 계세요? 루티가 응원해요', 'wave'], ['출출하지 않으세요? 간식 하나 챙겨 드세요', 'health'], ['오늘 만난 고객님은 어떠셨어요?', 'work']],
-    evening: [['오늘도 정말 수고 많으셨어요!', 'wave'], ['저녁은 맛있는 거 드세요. 오늘도 고생했어요', 'health'], ['오늘 하루 어떠셨어요? 차곡차곡 잘 쌓였을 거예요', 'saving']],
-    night: [['늦게까지 고생 많으세요. 오늘은 푹 쉬세요', 'wave'], ['푹 쉬는 것도 일이에요. 내일 또 만나요!', 'wave']]
+    dawn: [['출근길이 붐빌 시간이에요. 여유 있게 출발하세요', 'calendar'], ['하루를 여는 아침이에요. 오늘 일정 한 번 훑고 시작해요', 'calendar'], ['아침 첫 연락은 짧은 안부가 부담 없어요. 한 분께 어때요?', 'work']],
+    morning: [['오전엔 머리가 맑을 때죠. 까다로운 상담 준비를 먼저 해 둬요', 'review'], ['점심 약속 전 오전이에요. 오늘 만날 고객님 자료 미리 볼까요?', 'review'], ['오전 커피 한 잔 할 때죠. 오늘 상담 순서 같이 정리해요', 'calendar']],
+    lunch: [['점심시간이 다가와요. 식사 상담이 있으면 장소 한 번 더 확인해요', 'work'], ['점심 무렵엔 고객님들도 잠깐 여유가 있을 때예요. 문자 안부 어때요?', 'work']],
+    afternoon: [['점심 직후라 나른할 때죠. 짧게 걷고 오후를 시작해요', 'health'], ['오후 3시쯤 집중이 떨어지죠. 물 한 잔 마시고 쉬어 가요', 'health'], ['오후 방문 일정 있으세요? 이동 동선을 묶어 보면 편해요', 'calendar'], ['퇴근 전 한두 시간, 내일 상담 준비해 두면 아침이 가벼워요', 'review']],
+    evening: [['퇴근 시간이에요. 오늘 만난 고객님 메모만 남기고 쉬어요', 'saving'], ['저녁 시간이라 고객님 연락은 내일로 미뤄도 괜찮아요. 푹 쉬세요', 'wave'], ['하루를 마무리할 때예요. 오늘 한 일, 차곡차곡 잘 쌓였어요', 'saving']],
+    night: [['밤이 늦었어요. 내일 일정만 확인하고 푹 쉬세요', 'calendar'], ['늦은 시간까지 수고 많으세요. 잘 쉬어야 내일 상담도 잘 돼요', 'wave']]
   };
   var slot = function (h) { return h < 5 ? 'night' : h < 9 ? 'dawn' : h < 11 ? 'morning' : h < 13 ? 'lunch' : h < 18 ? 'afternoon' : h < 22 ? 'evening' : 'night'; };
-  function weatherGreets(w, h) {
-    if (!w) return [];
-    var out = [], code = String(w.iconCode || '').slice(0, 2), t = +w.temperature, pm = String(w.pm10Grade || '') + String(w.pm25Grade || '');
-    var rain = /^(09|10|11)$/.test(code) || +w.rainProbability >= 60, snow = code === '13';
-    if (snow) out.push(['눈이 와요! 다니실 때 미끄러지지 않게 조심하세요', 'health']);
-    else if (rain) out.push(['비 오는 날이네요. 우산은 챙기셨어요?', 'health'], ['비 오는 날엔 따뜻한 차 한 잔 어떠세요?', 'wave']);
-    if (!isNaN(t) && t <= 5) out.push(h < 13 ? ['오늘 좀 쌀쌀하죠? 따뜻하게 입고 나가셨어요?', 'health'] : ['많이 춥죠? 따뜻한 거 한 잔 드시면서 해요', 'health']);
-    if (!isNaN(t) && t >= 28) out.push(h < 13 ? ['오늘 덥대요! 물 자주 챙겨 드세요', 'health'] : ['더운 오후죠? 시원한 곳에서 잠깐 쉬어요', 'health']);
-    if (/나쁨/.test(pm)) out.push(['미세먼지가 나빠요. 마스크 챙기셨어요?', 'health']);
+  // 요일이 근거가 되는 문구 (시간대 문구와 함께 섞음)
+  function dayGreets(d, h) {
+    var w = d.getDay(), out = [];
+    if (w === 1 && h < 13) out.push(['월요일 아침이에요. 이번 주 상담 일정 한눈에 정리해 봐요', 'calendar']);
+    if (w === 5 && h >= 13) out.push(['금요일 오후네요. 이번 주 상담 정리하고 가볍게 마무리해요', 'saving']);
+    if (w === 0 || w === 6) out.push(['주말에도 들르셨네요. 오늘은 가볍게 둘러보고 쉬어요', 'wave']);
     return out;
   }
-  // 이달의 이슈: 달마다 바뀌는 시즌 이슈 (뉴스는 홈 아래쪽에 따로 나오므로 인사말에는 쓰지 않음)
+  // 날씨 문구: 기온·강수확률·일교차·미세먼지 수치를 근거로
+  function weatherGreets(w, h) {
+    if (!w) return [];
+    var out = [], code = String(w.iconCode || '').slice(0, 2), t = Math.round(+w.temperature), pm = String(w.pm10Grade || '') + String(w.pm25Grade || '');
+    var pop = Math.round(+w.rainProbability), gap = Math.round(+w.maxTemp - +w.minTemp);
+    var rain = /^(09|10|11)$/.test(code) || pop >= 60, snow = code === '13';
+    if (snow) out.push(['지금 눈이 와요. 외근길 미끄러지지 않게 천천히 다니세요', 'health']);
+    else if (rain) out.push([(pop && pop < 100 ? '강수 확률 ' + pop + '%예요. ' : '비 소식이 있어요. ') + '외근 가실 때 우산 챙기세요', 'health'], ['비 오는 날엔 방문보다 전화 안부가 반가울 수 있어요', 'work']);
+    if (!isNaN(t) && t <= 5) out.push(h < 13 ? ['아침 기온 ' + t + '도래요. 외근길 목도리 꼭 챙기세요', 'health'] : ['지금 ' + t + '도로 쌀쌀해요. 따뜻한 차 한 잔 하면서 해요', 'health']);
+    if (!isNaN(t) && t >= 28) out.push(h < 13 ? ['오늘 ' + t + '도까지 더워요. 외근은 오전에 몰아 두면 덜 지쳐요', 'health'] : ['지금 ' + t + '도예요. 오후 외근 땐 물 자주 드세요', 'health']);
+    if (!isNaN(t) && t > 5 && t < 28 && !rain && !snow) out.push(['지금 ' + t + '도, 걷기 좋은 날씨예요. 고객 방문 다니기 좋겠어요', 'work']);
+    if (!isNaN(gap) && gap >= 10) out.push(['오늘 일교차가 ' + gap + '도나 돼요. 겉옷 하나 챙겨 다니세요', 'health']);
+    if (/나쁨/.test(pm)) out.push(['오늘 미세먼지가 나빠요. 외근길엔 마스크 챙기세요', 'health']);
+    return out;
+  }
+  // 이달의 이슈: 달마다 바뀌는 시즌·트렌드 (뉴스는 홈 아래쪽에 따로 나오므로 인사말에는 쓰지 않음)
   var ISSUE_MONTH = {
-    1: [['새해 복 많이 받으세요! 올해도 같이 힘내요', 'wave'], ['설 명절 준비는 잘 되고 계세요?', 'calendar']],
-    2: [['입학·졸업 시즌이에요. 주변에 축하할 일 있으세요?', 'wave']],
-    3: [['새 학기, 새 봄이에요. 환절기 감기 조심하세요', 'health']],
-    4: [['꽃 피는 계절이에요. 잠깐 바깥 공기 쐬어 볼까요?', 'health']],
-    5: [['가정의 달이에요. 가족분들께도 안부 전하셨어요?', 'wave'], ['종합소득세 신고 달이에요. 미리 챙겨 두셨어요?', 'saving']],
-    6: [['벌써 상반기 마무리예요. 그동안 정말 수고했어요', 'saving']],
-    7: [['휴가 계획은 세우셨어요? 쉬는 것도 중요해요', 'calendar']],
-    8: [['휴가는 잘 다녀오셨어요? 더위 조심하세요', 'health']],
-    9: [['추석이 다가와요. 명절 계획은 세우셨어요?', 'calendar']],
-    10: [['단풍 구경은 다녀오셨어요? 일교차 조심하세요', 'health']],
-    11: [['연말정산 시즌이 다가와요. 서류는 챙겨 두셨어요?', 'saving'], ['한 해가 얼마 안 남았네요. 올해도 수고 많았어요', 'wave']],
-    12: [['연말이에요! 한 해 동안 정말 고생 많으셨어요', 'wave'], ['세액공제 마감이 다가와요. 놓친 건 없으세요?', 'saving']]
+    1: [['새해 첫 달이에요. 고객님께 새해 인사 한 줄 보내 보세요', 'work'], ['연말정산 서류 제출 시즌이에요. 고객님들도 궁금해하실 때예요', 'saving'], ['1월은 한파가 잦아요. 외근길 보온 단단히 하세요', 'health']],
+    2: [['졸업·입학 시즌이에요. 자녀 둔 고객님께 축하 인사 어때요?', 'wave'], ['연말정산 환급이 들어오는 때예요. 고객님 반응 들어 보세요', 'saving']],
+    3: [['새 학기가 시작됐어요. 학부모 고객님께 안부 전하기 좋아요', 'work'], ['환절기라 감기 걸리기 쉬워요. 따뜻하게 챙겨 입으세요', 'health']],
+    4: [['벚꽃 나들이 철이에요. 주말 앞두고 고객님께 안전 안부 어때요?', 'wave'], ['4월은 미세먼지가 잦아요. 외근길 마스크 챙기세요', 'health']],
+    5: [['가정의 달이에요. 고객님 가족 안부 묻기 좋은 때예요', 'wave'], ['종합소득세 신고 달이에요. 사업자 고객님들 바쁘실 거예요', 'saving']],
+    6: [['상반기 마지막 달이에요. 올해 절반, 정말 잘 해 오셨어요', 'saving'], ['장마가 시작되는 때예요. 외근 일정엔 우산 꼭 챙기세요', 'health']],
+    7: [['휴가철이 시작됐어요. 여행 가는 고객님께 안부 한 줄 어때요?', 'wave'], ['본격 무더위예요. 외근은 오전에 몰아 두면 덜 지쳐요', 'health']],
+    8: [['휴가 다녀온 고객님 많을 때예요. 잘 다녀오셨는지 물어봐요', 'work'], ['폭염이 이어지는 8월이에요. 물 자주 드시면서 다니세요', 'health']],
+    9: [['추석이 있는 달이에요. 명절 안부 문자 미리 준비해 둬요', 'calendar'], ['선선해진 9월이에요. 미뤄 둔 고객 방문 다니기 좋아요', 'work']],
+    10: [['건강검진 막바지 시즌이에요. 고객님들 검진 소식 물어봐요', 'health'], ['일교차가 큰 10월이에요. 겉옷 하나 챙겨 다니세요', 'health']],
+    11: [['수능이 있는 달이에요. 수험생 둔 고객님께 응원 한 줄 어때요?', 'wave'], ['김장철이에요. 고객님 댁 김장 안부 물어보면 반가워하세요', 'work'], ['연말정산 미리보기가 열리는 때예요. 고객님들 관심이 커져요', 'saving'], ['독감 예방접종 시즌이에요. 맞으셨어요? 건강 먼저 챙겨요', 'health']],
+    12: [['한 해 마지막 달이에요. 고객님께 감사 인사 전하기 좋은 때예요', 'wave'], ['세액공제 마감이 12월 31일이에요. 고객님들이 많이 물어보실 때예요', 'saving'], ['동지가 있는 12월, 해가 짧아요. 외근은 일찍 마무리해요', 'calendar']]
   };
   function issueGreets() {
     return (ISSUE_MONTH[new Date().getMonth() + 1] || []).slice();
@@ -176,7 +189,8 @@
   function loadAiGreet() {
     if (ai.started) return; ai.started = true;
     var w = cache.weather, region = w && w.location ? String(w.location).split(' ')[0] : '서울';
-    var wx = w ? [w.description, w.temperature != null ? round(w.temperature) + '도' : ''].filter(Boolean).join(',') : '';
+    // 날씨 요약: 설명,현재기온,최저·최고,강수확률 (예: 흐림,12도,최저5도,최고14도,강수30%)
+    var wx = w ? [w.description, w.temperature != null ? round(w.temperature) + '도' : '', w.minTemp != null ? '최저' + round(w.minTemp) + '도' : '', w.maxTemp != null ? '최고' + round(w.maxTemp) + '도' : '', w.rainProbability != null ? '강수' + round(w.rainProbability) + '%' : ''].filter(Boolean).join(',') : '';
     var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 1500);
     Promise.reject(new Error('preview'))
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -187,9 +201,9 @@
   function chooseGreet() { return ai.items ? ai.items[Math.floor(Math.random() * ai.items.length)] : pickGreet(); }
   var greetPicked = null, greetFinal = false;
   function pickGreet() {
-    var h = new Date().getHours(), r = Math.random();
-    var tg = GREET_TIME[slot(h)], wg = weatherGreets(cache.weather, h), ig = issueGreets();
-    // 시간대 35% · 날씨 30% · 이달의 이슈 35% — 들어올 때마다 다른 문구
+    var now = new Date(), h = now.getHours(), r = Math.random();
+    var tg = GREET_TIME[slot(h)].concat(dayGreets(now, h)), wg = weatherGreets(cache.weather, h), ig = issueGreets();
+    // 시간대·요일 35% · 날씨 30% · 이달의 이슈 35% — 들어올 때마다 다른 문구
     var pool = r < 0.35 ? tg : r < 0.65 ? (wg.length ? wg : ig) : (ig.length ? ig : tg);
     return pool[Math.floor(Math.random() * pool.length)];
   }
