@@ -273,7 +273,7 @@
     $('#viewer').hidden = true;
     $('#viewerFrame').src = 'about:blank';
   }
-  var HIDE = '.planner-sidebar,.fc-drawer-overlay,.fc-topbar-hamburger{display:none!important}.planner-main{margin-left:0!important;width:100%!important;max-width:none!important}';
+  var HIDE = '.fc-modal-overlay:has(.fcn-daily-modal){display:none!important}.planner-sidebar,.fc-drawer-overlay,.fc-topbar-hamburger{display:none!important}.planner-main{margin-left:0!important;width:100%!important;max-width:none!important}';
   $('#viewerFrame').addEventListener('load', function () {
     var f = $('#viewerFrame');
     if (f.dataset.same !== '1') return;
@@ -285,10 +285,11 @@
     var NS_KEEP = ['힘내라 사장님', '혼자여도 괜찮아', '가자 서울대', '아프지마 라이더', '화이팅, 청년농어민'];
     var onlyTwo = function (doc) { doc.querySelectorAll('.fcns-grid .fcns-card').forEach(function (c) { var t = (c.getAttribute('aria-label') || '').replace(/ 열기$/, ''); if (NS_KEEP.indexOf(t) < 0) c.style.display = 'none'; }); };
     // 뉴 세일즈: 목록은 카드 5개를 흐리게 보여 주고 그 위에 「준비 중」 안내, 안쪽 페이지는 화면 전체를 안내로 덮음 (2026-11-13)
-    var NS_SOON_HTML = '<div style="font-size:52px;line-height:1">🌱</div><p style="margin:0;font-size:14px;font-weight:800;letter-spacing:.06em;color:#769636">뉴 세일즈 · 오픈 준비 중</p>' +
+    var NS_SOON_HTML = '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;max-width:560px;width:100%;box-sizing:border-box;padding:34px 36px;background:#fff;border:2px solid #B5D334;border-radius:24px;box-shadow:0 18px 48px rgba(31,42,18,.18)">' +
+      '<div style="font-size:52px;line-height:1">🌱</div><p style="margin:0;font-size:14px;font-weight:800;letter-spacing:.06em;color:#769636">뉴 세일즈 · 오픈 준비 중</p>' +
       '<h2 style="margin:0;font-size:30px;font-weight:800;line-height:1.35;color:#1F2A12">더 좋은 모습으로 준비하고 있어요</h2>' +
       '<p style="margin:0;font-size:18px;line-height:1.6;color:#5b6152">고객 유형별 상담 도구를 꼼꼼히 다듬는 중이에요.<br>조금만 기다려 주세요, 곧 열어 드릴게요!</p>' +
-      '<button type="button" style="margin-top:10px;height:46px;padding:0 22px;border:0;border-radius:12px;background:#769636;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer">홈으로 돌아가기</button>';
+      '<button type="button" style="margin-top:10px;height:46px;padding:0 22px;border:0;border-radius:12px;background:#769636;color:#fff;font:inherit;font-size:16px;font-weight:800;cursor:pointer">홈으로 돌아가기</button></div>';
     var nsReady = function (doc) {
       var path = doc.location.pathname, box = doc.getElementById('mrSoon');
       var inner = /^\/planner\/new-sales\/./.test(path), list = /^\/planner\/new-sales\/?$/.test(path);
@@ -299,7 +300,7 @@
       box = doc.createElement('div'); box.id = 'mrSoon';
       var base = 'z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:Pretendard,system-ui,sans-serif;text-align:center;padding:24px;';
       if (list) { if (doc.defaultView.getComputedStyle(host).position === 'static') host.style.position = 'relative';
-        box.setAttribute('style', 'position:absolute;inset:0;' + base + 'background:rgba(246,247,242,.62);backdrop-filter:blur(1px);border-radius:20px'); }
+        box.setAttribute('style', 'position:absolute;inset:0;' + base + 'background:rgba(246,247,242,.38);border-radius:20px'); }
       else box.setAttribute('style', 'position:fixed;inset:0;' + base + 'z-index:2147483000;background:#F6F7F2');
       box.innerHTML = NS_SOON_HTML;
       box.querySelector('button').addEventListener('click', function () { try { window.document.getElementById('viewerBack').click(); } catch (e) { doc.defaultView.history.back(); } });
@@ -308,7 +309,7 @@
     var hideUnclaimed0 = hideUnclaimed; hideUnclaimed = function (doc) { hideUnclaimed0(doc); noAdss(doc); onlyTwo(doc); nsReady(doc); };
     try { hideUnclaimed(f.contentDocument); new MutationObserver(function () { hideUnclaimed(f.contentDocument); }).observe(f.contentDocument.documentElement, { childList: true, subtree: true }); } catch (e) {}
     try { var dd = f.contentDocument; new MutationObserver(function () { if (!dd.getElementById('mrHide')) { var s2 = dd.createElement('style'); s2.id = 'mrHide'; s2.textContent = HIDE; (dd.head || dd.documentElement).appendChild(s2); } }).observe(dd.documentElement, { childList: true, subtree: true }); } catch (e) {}
-    try { var d = f.contentDocument; if (d && !d.getElementById('mrHide')) { var st = d.createElement('style'); st.id = 'mrHide'; st.textContent = '.planner-sidebar,.fc-drawer-overlay,.fc-topbar-hamburger{display:none!important}.planner-main{margin-left:0!important;width:100%!important;max-width:none!important}'; d.head.appendChild(st); } } catch (e) {}
+    try { var d = f.contentDocument; if (d && !d.getElementById('mrHide')) { var st = d.createElement('style'); st.id = 'mrHide'; st.textContent = '.fc-modal-overlay:has(.fcn-daily-modal){display:none!important}.planner-sidebar,.fc-drawer-overlay,.fc-topbar-hamburger{display:none!important}.planner-main{margin-left:0!important;width:100%!important;max-width:none!important}'; d.head.appendChild(st); } } catch (e) {}
   });
   $('#viewerBack').addEventListener('click', closeViewer);
   $('#pvHome').addEventListener('click', closeViewer);

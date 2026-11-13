@@ -163,6 +163,7 @@
   const CATALOG = [
     { id: 'claim',      name: '보험금 청구',      desc: '청구서 작성·청구 이력',     url: '/planner/claim/request',              art: 'assets/v2_claim.webp' },
     { id: 'customer',   name: '고객관리',         desc: '고객 등록·검색·상담 이력',  url: '/planner/customers',                  art: 'assets/v2_staff.webp' },
+    { id: 'newsales',   name: '뉴 세일즈',        desc: '고객 유형에 맞는 상담 시작', url: '/planner/new-sales',                 art: 'assets/v2_quest.webp' },
     { id: 'premium',    name: '보험료 비교',      desc: '보험사별 조건 비교하기',    url: '/planner/claim/premium-compare',      art: 'assets/clay_premium-compare.png' },
     { id: 'unclaimed',  name: '미청구 보험금 찾기', desc: '놓친 보험금 확인하기',     url: '/planner/convenience/treatment-claim', art: 'assets/v2_solo-refund.webp' },
     { id: 'report',     name: '보장분석 보고서',  desc: 'AI 보장분석 보고서 만들기', url: '/planner/claim/report-basic',         art: 'assets/clay_coverage-report.png' },
@@ -582,7 +583,9 @@
   async function showDaily() {
     if (!SHOW_DAILY) return;
     try { if (localStorage.getItem(DISMISS_KEY) === today()) return; } catch (e) {}
-    const n = await loadDaily();
+    // 바로 띄움: 지난번 받아 둔 이미지(없으면 기본 이미지)로 먼저 열고, ROOT 최신 이미지가 오면 바꿔 끼움
+    let n = DAILY_FALLBACK;
+    try { const c = JSON.parse(localStorage.getItem('minroot:dailyNewsLast') || 'null'); if (c && c.imageUrl) n = c; } catch (e) {}
     const ov = document.createElement('div');
     ov.className = 'fc-modal-overlay';
     ov.innerHTML =
@@ -612,6 +615,11 @@
     });
     document.addEventListener('keydown', onKey);
     document.body.appendChild(ov);
+    loadDaily().then((m) => {
+      if (!m || !m.imageUrl) return;
+      try { localStorage.setItem('minroot:dailyNewsLast', JSON.stringify({ displayDate: m.displayDate || '', imageUrl: m.imageUrl })); } catch (e) {}
+      if (m.imageUrl !== n.imageUrl) { n = m; const im = ov.querySelector('.fcn-daily-popup-img'); if (im) im.src = m.imageUrl; }
+    });
   }
 
   /* ── 상단 모드 스위치: 간편모드(이 화면) / 일반모드(기존 ROOT) ── */
@@ -909,6 +917,7 @@
     { name: '보험금 청구',      url: '/planner/claim/request',              art: 'assets/v2_claim.webp' },
     { name: '미청구 보험금 찾기', url: '/planner/convenience/treatment-claim', art: 'assets/v2_solo-refund.webp' },
     { sec: '상담 준비' },
+    { name: '뉴 세일즈',        url: '/planner/new-sales',                  art: 'assets/v2_quest.webp' },
     { name: '보험료 비교',      url: '/planner/claim/premium-compare',      art: 'assets/clay_premium-compare.png' },
     { name: '상품 비교서',      url: '/planner/claim/product-compare',      art: 'assets/v2_lg-mydocs.webp' },
     { name: '보장분석 보고서',  url: '/planner/claim/report-basic',         art: 'assets/clay_coverage-report.png' },
