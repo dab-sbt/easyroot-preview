@@ -914,8 +914,7 @@
     { name: '보장분석 보고서',  url: '/planner/claim/report-basic',         art: 'assets/clay_coverage-report.png' },
     { sec: '교육' },
     { name: '동영상 강의',      url: '/planner/education',                  art: 'assets/clay_video-lecture.png' },
-    { name: '현장 용어 사전',     url: '/terms.html',                      art: 'assets/v2_lg-mydocs.webp' },
-    { name: '알면 받는 보상 사례', url: '/cases.html',                         art: 'assets/v2_coverage.webp' },
+    // 보류(2026-11-13): 현장 용어 사전(/terms.html)·알면 받는 보상 사례(/cases.html)는 나중에 다시 넣음 — 파일은 그대로 보관
     { sec: '영업 관리' },
     { name: '오늘의 할 일',     url: '/planner/hub/tasks',                  art: 'assets/v2_quest.webp' },
     { name: '일일마감',         url: '/planner/hub/close',                  art: 'assets/v2_job.webp' },

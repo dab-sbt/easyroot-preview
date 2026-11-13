@@ -705,7 +705,7 @@ $('#closeDialog').innerHTML=icon('close');$('#closeDialog').onclick=()=>$('#dial
   };
 /* 미니루트: 좌측 메뉴 카테고리 구성 */
   modules.push(
-    {id:'terms',name:'현장 용어 사전',url:'/terms.html'},{id:'cases',name:'알면 받는 보상 사례',url:'/cases.html'},
+    /* 보류(2026-11-13): {id:'terms',name:'현장 용어 사전',url:'/terms.html'},{id:'cases',name:'알면 받는 보상 사례',url:'/cases.html'}, — 나중에 다시 넣음 */
     {id:'bizcard',name:'온라인 명함',url:'/planner/convenience/business-card'},{id:'cardnews',name:'카드뉴스 보내기',url:'/planner/convenience/card-news'},
     {id:'saju',name:'사주풀이',url:'/planner/convenience/saju'},{id:'fincalc',name:'보험·금융 계산기',url:'/planner/convenience/fin-calc'},
     {id:'insurer',name:'보험사 사이트',url:'/planner/convenience/insurer-sites'},
@@ -714,7 +714,7 @@ $('#closeDialog').innerHTML=icon('close');$('#closeDialog').onclick=()=>$('#dial
   var NS=modules.find(function(m){return m.id==='new'}); if(NS) NS.master=false; /* 뉴 세일즈: 라이트에서도 (모바일 메뉴 포함) 표시 */
   Object.assign(IMG,{compare:'assets/clay_premium-compare.png',report:'assets/clay_coverage-report.png',edu:'assets/clay_video-lecture.png',terms:'assets/v2_lg-mydocs.webp',cases:'assets/v2_coverage.webp',bizcard:'assets/clay_business-card.png',talk:'assets/clay_root-talk.png',
     cardnews:'assets/clay_card-news.png',saju:'assets/clay_saju.png',fincalc:'assets/clay_fin-calc.png',insurer:'assets/clay_insurer-sites.png',hospital:'assets/clay_hospital-eval.png',pharmacy:'assets/clay_pharmacy.png',schedule:_I['alarm']});
-  var SIDE_GROUPS=[['고객·청구',['customer','claim','unclaimed']],['상담 준비',['new','compare','product','report']],['교육',['edu','terms','cases']],
+  var SIDE_GROUPS=[['고객·청구',['customer','claim','unclaimed']],['상담 준비',['new','compare','product','report']],['교육',['edu']],
     ['영업 관리',['tasks','close','reconnect']],['연락 도구',['bizcard','talk','cardnews','saju']],['업무 지원',['schedule','fincalc','insurer','hospital','pharmacy']]];
   side=function(){ return '<aside class="sidebar"><div class="side-title side-root">ROOT SERVICE</div>'+SIDE_GROUPS.map(function(g){ return '<div class="side-title">'+g[0]+'</div>'+g[1].map(function(id){return sideButton(id)}).join(''); }).join('')+'</aside>'; };
   state.plan='light'; state.mode='original'; state.expanded=false; state.tab='전체';
