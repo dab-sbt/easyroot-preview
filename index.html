@@ -235,9 +235,10 @@
     if (typeof path !== 'string' || path.charAt(0) !== '/') return;
     // 로컬 서버(localhost:5173)로 열었으면 ROOT 를 같은 주소로 열어 로그인 공유 + 사이드바 직접 제거
     // 미리보기: 우리 페이지(terms.html·cases.html)는 그대로 열고, ROOT 화면은 안내로 대신함
-    var OURS = /^\/[^\/]+\.html(?:[?#]|$)/.test(path);
+    var NS = /^\/planner\/new-sales/.test(path);   // 뉴 세일즈: 원본과 같은 「준비 중」 화면(new-sales.html)
+    var OURS = NS || /^\/[^\/]+\.html(?:[?#]|$)/.test(path);
     var SAME = OURS;
-    var url = OURS ? path.slice(1) : 'about:blank';
+    var url = NS ? 'new-sales.html' : OURS ? path.slice(1) : 'about:blank';
     $('#pvName').textContent = '「' + (title || 'ROOT') + '」';
     $('#pvNotice').hidden = OURS;
     $('#viewerTitle').textContent = title || path;
