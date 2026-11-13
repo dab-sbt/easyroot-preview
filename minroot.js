@@ -578,7 +578,7 @@
   }
 
   // ★ 하루를 여는 카드뉴스 팝업: 작업 중에는 끔. 프론트 확정 후 최종 HTML 만들 때 true 로 켬.
-  const SHOW_DAILY = true;
+  const SHOW_DAILY = true;   // 2026-11-13 켬 (간편모드 첫 화면에 「하루를 여는 주요 뉴스」 팝업)
   async function showDaily() {
     if (!SHOW_DAILY) return;
     try { if (localStorage.getItem(DISMISS_KEY) === today()) return; } catch (e) {}
