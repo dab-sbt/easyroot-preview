@@ -182,7 +182,7 @@
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
   var state = {
     device: saved.device === 'mobile' ? 'mobile' : 'pc',
-    mode: location.hash === '#normal' ? 'normal' : (saved.mode === 'normal' ? 'normal' : 'simple')
+    mode: location.hash === '#normal' ? 'normal' : 'simple'   // 열면 항상 간편모드 먼저 (마지막 모드는 기억하지 않음)
   };
   var save = function () { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
