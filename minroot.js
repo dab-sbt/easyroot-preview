@@ -1315,6 +1315,15 @@
     if (logo.parentElement) { logo.parentElement.style.display = 'flex'; logo.parentElement.style.alignItems = 'center'; }
   }
 
-  function init() { initBurger(); buildQuick(); initChips(); initAsk(); initChatLog(); initNav(); initModeSwitch(); initRutiInquiry(); showDaily(); }
+  // 큰 제목이 노트북 폭에서 세 줄로 꺾이지 않게: 두 줄 고정 + 칸 폭에 맞춰 글자 크기 자동 축소
+  (function () { const st = document.createElement('style'); st.textContent = '@media (min-width:601px) and (max-width:1599px){.fcsc-page .fcsc-title{white-space:nowrap !important;font-size:clamp(26px,2.6vw,40px) !important}}'; document.head.appendChild(st); })();
+  // 큰 제목: 「찾지 말고」 뒤에서 줄바꿈 + 끝을 느낌표로 (원본 h1 의 글자·강조 스타일은 그대로 두고 글자만 손봄)
+  function initTitle() {
+    const h = $('.fcsc-title'); if (!h || h.dataset.mrTitle) return; h.dataset.mrTitle = '1';
+    const first = h.firstChild, last = h.lastChild;
+    if (first && first.nodeType === 3) { first.nodeValue = first.nodeValue.replace(/\s+$/, ''); first.after(document.createElement('br')); }
+    if (last && last.nodeType === 3) last.nodeValue = last.nodeValue.replace(/\.\s*$/, '!');
+  }
+  function init() { initTitle(); initBurger(); buildQuick(); initChips(); initAsk(); initChatLog(); initNav(); initModeSwitch(); initRutiInquiry(); showDaily(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
