@@ -618,8 +618,13 @@
     '.mr-log{display:flex;flex-direction:column;box-sizing:border-box;min-width:0;background:#fff;color:#1F2A12;font-family:inherit;text-align:left}' +
     '.mr-log:not(.is-dock){position:fixed;top:0;bottom:0;left:0;z-index:9401;width:min(320px,88vw);box-shadow:8px 0 30px rgba(20,25,12,.18);transform:translateX(-100%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}' +
     '.mr-log:not(.is-dock).is-open{transform:none;visibility:visible;transition:transform .22s ease}' +
-    '.mr-log.is-dock{position:sticky;top:16px;align-self:start !important;height:calc(100vh - 120px);min-height:420px;border:1px solid #E3E6EA;border-radius:22px;overflow:hidden}' +
-    '.mr-log.is-dock .mr-log-x{display:none}' +
+    '.mr-log.is-dock{position:sticky;top:calc(var(--mr-tb,0px) + 16px);align-self:start !important;height:calc(100vh - var(--mr-tb,0px) - 40px);max-height:calc(100vh - 110px);min-height:420px;border:1px solid #E3E6EA;border-radius:22px;overflow:hidden}' +
+    '.mr-log.is-dock .mr-log-x{display:none}.mr-log:not(.is-dock) .mr-log-fold{display:none}' +
+    '.mr-log-fold{display:grid;place-items:center;width:38px;height:38px;padding:0;border:1px solid transparent;border-radius:10px;background:none;color:#5b6152;cursor:pointer}.mr-log-fold:hover,.mr-log-fold:focus-visible{border-color:#B5D334;outline:none}' +
+    /* 접힌 상태: 펴기 버튼과 새 대화(＋)만 있는 좁은 세로 띠 */
+    '.mr-log.is-dock.is-fold .mr-log-head{flex-direction:column;padding:12px 0 8px}.mr-log.is-dock.is-fold .mr-log-head b,.mr-log.is-dock.is-fold .mr-log-search,.mr-log.is-dock.is-fold .mr-log-list,.mr-log.is-dock.is-fold .mr-log-note{display:none}' +
+    '.mr-log.is-dock.is-fold .mr-log-fold svg{transform:scaleX(-1)}' +
+    '.mr-log.is-dock.is-fold .mr-log-new{width:40px;height:40px;margin:0 auto;padding:0;font-size:0;gap:0}.mr-log.is-dock.is-fold .mr-log-new .material-symbols-rounded{font-size:22px}' +
     '.mr-log-ov{position:fixed;inset:0;z-index:9400;background:rgba(20,25,12,.32);opacity:0;pointer-events:none;transition:opacity .2s}.mr-log-ov.is-on{opacity:1;pointer-events:auto}' +
     '.mr-log-head{display:flex;align-items:center;justify-content:space-between;min-height:40px;padding:14px 12px 10px 18px}.mr-log-head b{font-size:17px;font-weight:800}' +
     '.mr-log-x{width:38px;height:38px;border:1px solid transparent;border-radius:10px;background:none;color:#5b6152;font-size:20px;cursor:pointer}.mr-log-x:hover{border-color:#B5D334}' +
@@ -652,12 +657,19 @@
     '.mr-log-open:hover,.mr-log-open:focus-visible{border-color:#B5D334;box-shadow:0 0 0 1px #B5D334;outline:none}.mr-log-open .material-symbols-rounded{font-size:18px}' +
     '.mr-chat-acts{display:inline-flex;align-items:center;gap:8px}' +
     '.fcsc-page .fcsc-ask-foot .mr-log-open{margin-right:auto}' +
-    '.fcsc-split.is-chat .fcsc-ask-foot .mr-log-open,.fcsc-split.has-log .fcsc-chat-head .mr-log-open{display:none}' +
-    /* 큰 화면 채팅: 왼쪽에 대화 기록 칸을 붙박이로 (좁은 화면은 버튼으로 여는 서랍) */
+    '.fcsc-split.is-chat .fcsc-ask-foot .mr-log-open,.fcsc-split.has-log .mr-log-open{display:none}' +
+    /* PC(601px 이상): 홈·채팅 모두 왼쪽에 대화 기록 칸을 붙박이로(접기/펴기). 모바일만 버튼으로 여는 서랍 */
     /* 모바일(600px 이하): 위 「화면 꽉 차게」 2칸 규칙(minmax(480px))이 폰에서 채팅·입력란을 덮어서 한 칸으로 (2026-11-14, 대화 기록 서랍 버튼이 가려지던 문제) */
     '@media (max-width:600px){.fcsc-page .fcsc-split{grid-template-columns:minmax(0,1fr) !important;padding-left:16px !important;padding-right:16px !important}}' +
-    '@media (min-width:1281px){.fcsc-page .fcsc-split.is-chat.has-log{grid-template-columns:272px minmax(0,1.5fr) minmax(400px,1fr) !important;gap:28px !important;padding-left:24px !important}}' +
-    '@media (min-width:1600px){.fcsc-page .fcsc-split.is-chat.has-log{grid-template-columns:310px minmax(0,1.5fr) minmax(440px,1fr) !important;gap:40px !important}' +
+    '@media (min-width:601px){.fcsc-page .fcsc-split.has-log{grid-template-columns:260px minmax(0,1fr) !important;gap:24px !important;padding-left:20px !important;padding-right:24px !important}' +
+      '.fcsc-page .fcsc-split.has-log > .fcsc-main,.fcsc-page .fcsc-split.has-log > .fcsc-side{grid-column:2}' +
+      '@media (max-width:1280px){.fcsc-page .fcsc-split.has-log > .mr-log{grid-row:1 / span 2}}' +
+      '.fcsc-page .fcsc-split.has-log.log-fold{grid-template-columns:62px minmax(0,1fr) !important}}' +
+    '@media (min-width:1281px){.fcsc-page .fcsc-split.has-log{grid-template-columns:272px minmax(0,1.5fr) minmax(400px,1fr) !important;gap:28px !important;padding-right:40px !important}' +
+      '.fcsc-page .fcsc-split.has-log > .fcsc-side{grid-column:3}' +
+      '.fcsc-page .fcsc-split.has-log.log-fold{grid-template-columns:62px minmax(0,1.5fr) minmax(440px,1fr) !important;gap:36px !important}}' +
+    '@media (min-width:1600px){.fcsc-page .fcsc-split.has-log{grid-template-columns:310px minmax(0,1.5fr) minmax(440px,1fr) !important;gap:40px !important}' +
+      '.fcsc-page .fcsc-split.has-log.log-fold{grid-template-columns:62px minmax(0,1.5fr) minmax(480px,1fr) !important}' +
       '.mr-log-head b{font-size:19px}.mr-log-new{height:48px;font-size:16px}.mr-log-search input{font-size:15px}.mr-log-grp{font-size:13.5px}' +
       '.mr-log-t{font-size:16px}.mr-log-when{font-size:13px}.mr-log-snip{font-size:13.5px}.mr-log-open{font-size:15px;height:38px}}';
 
@@ -669,42 +681,63 @@
     logEl = document.createElement('aside');
     logEl.className = 'mr-log'; logEl.setAttribute('aria-label', '대화 기록');
     logEl.innerHTML =
-      '<div class="mr-log-head"><b>대화 기록</b><button type="button" class="mr-log-x" aria-label="대화 기록 닫기">✕</button></div>' +
+      '<div class="mr-log-head"><b>대화 기록</b><button type="button" class="mr-log-fold" aria-label="대화 기록 접기" title="대화 기록 접기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/><path d="M15.5 10 13.5 12l2 2"/></svg></button><button type="button" class="mr-log-x" aria-label="대화 기록 닫기">✕</button></div>' +
       '<button type="button" class="mr-log-new"><span class="material-symbols-rounded" aria-hidden="true">add</span>새 대화</button>' +
       '<label class="mr-log-search"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" placeholder="제목·내용 검색" aria-label="대화 기록 검색"></label>' +
       '<div class="mr-log-list"></div>' +
       '<p class="mr-log-note">이 기기(브라우저)에만 저장돼요 · 최근 ' + CHATS_MAX + '개</p>';
     document.body.append(logOv, logEl);
     logEl.querySelector('.mr-log-x').addEventListener('click', () => closeLog());
+    logEl.querySelector('.mr-log-fold').addEventListener('click', () => setFold(!logEl.classList.contains('is-fold')));
     logEl.querySelector('.mr-log-new').addEventListener('click', () => { closeLog(); resetChat(); const ta = $('.fcsc-input'); if (ta) ta.focus(); });
     logEl.querySelector('.mr-log-search input').addEventListener('input', renderLog);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && logEl.classList.contains('is-open') && !e.target.closest('.mr-log-item')) closeLog(); });
     // 홈(질문 전) 화면: 입력란 왼쪽 아래에 「대화 기록」 버튼
     const foot = $('.fcsc-ask-foot');
     if (foot && !foot.querySelector('.mr-log-open')) { foot.insertAdjacentHTML('afterbegin', LOG_OPEN_BTN); foot.querySelector('.mr-log-open').addEventListener('click', openLog); }
-    const mq = window.matchMedia('(min-width:1281px)');
+    const mq = window.matchMedia(LOG_DOCK_MQ);
     (mq.addEventListener ? mq.addEventListener('change', placeLog) : mq.addListener(placeLog));
+    syncTopbar(); window.addEventListener('resize', syncTopbar);
+    let fold = false; try { fold = localStorage.getItem(LOG_FOLD_KEY) === '1'; } catch (e) {}
+    setFold(fold, true);
     placeLog(); renderLog();
   }
-  // 큰 화면 + 채팅 중이면 채팅 왼쪽 칸에 붙박이, 아니면 서랍
+  // PC(601px 이상)는 홈·채팅 모두 왼쪽 붙박이 칸, 모바일은 서랍
+  const LOG_DOCK_MQ = '(min-width:601px)';
+  const LOG_FOLD_KEY = 'minroot:chatlog:fold';   // 접기 상태 기억(1 = 접힘)
   function placeLog() {
     if (!logEl) return;
     const split = $('.fcsc-split');
-    const dock = !!split && split.classList.contains('is-chat') && window.matchMedia('(min-width:1281px)').matches;
+    const dock = !!split && window.matchMedia(LOG_DOCK_MQ).matches;
     if (dock) {
       closeLog();
       split.classList.add('has-log'); logEl.classList.add('is-dock');
+      split.classList.toggle('log-fold', logEl.classList.contains('is-fold'));
       if (logEl.parentElement !== split) split.prepend(logEl);
     } else {
-      if (split) split.classList.remove('has-log');
+      if (split) split.classList.remove('has-log', 'log-fold');
       logEl.classList.remove('is-dock');
       if (logEl.parentElement !== document.body) document.body.appendChild(logEl);
     }
   }
+  // ROOT 상단 바가 화면에 붙어 있는 폭(좁은 PC)에서는 그 높이만큼 아래에 붙임(스크롤해도 상단 바에 가리지 않게)
+  function syncTopbar() {
+    const tb = $('.fc-topbar');
+    const h = tb && /sticky|fixed/.test(getComputedStyle(tb).position) ? tb.offsetHeight : 0;
+    document.documentElement.style.setProperty('--mr-tb', h + 'px');
+  }
+  function setFold(on, quiet) {
+    logEl.classList.toggle('is-fold', on);
+    const b = logEl.querySelector('.mr-log-fold');
+    b.setAttribute('aria-label', on ? '대화 기록 펴기' : '대화 기록 접기'); b.title = on ? '대화 기록 펴기' : '대화 기록 접기';
+    logEl.querySelector('.mr-log-new').title = on ? '새 대화' : '';
+    const split = $('.fcsc-split'); if (split) split.classList.toggle('log-fold', on && logEl.classList.contains('is-dock'));
+    if (!quiet) { try { localStorage.setItem(LOG_FOLD_KEY, on ? '1' : '0'); } catch (e) {} }
+  }
   function openLog() {
     if (!logEl) return;
     renderLog();
-    if (logEl.classList.contains('is-dock')) { logEl.querySelector('.mr-log-search input').focus(); return; }
+    if (logEl.classList.contains('is-dock')) { setFold(false); logEl.querySelector('.mr-log-search input').focus(); return; }
     logEl.classList.add('is-open'); logOv.classList.add('is-on');
     logEl.querySelector('.mr-log-new').focus({ preventScroll: true });
   }
