@@ -402,10 +402,12 @@
   let ctrl = null;
   let chatEl = null;
 
-  const timeStr = () => {
-    const d = new Date(); let h = d.getHours(); const ap = h < 12 ? '오전' : '오후';
+  const timeStr = (d = new Date()) => {
+    let h = d.getHours(); const ap = h < 12 ? '오전' : '오후';
     h = h % 12 || 12; return ap + ' ' + h + ':' + String(d.getMinutes()).padStart(2, '0');
   };
+  // 저장된 메시지 시각: 오늘이면 「오후 3:04」, 아니면 「11월 12일 오후 3:04」
+  const atStr = (t) => { const d = new Date(t); return (d.toDateString() === new Date().toDateString() ? '' : (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ') + timeStr(d); };
 
   function md(src) {
     const inline = (s) => esc(s)
@@ -435,7 +437,7 @@
     main.querySelectorAll('.fcsc-hero, .fcsc-ideas').forEach((e) => (e.style.display = 'none'));
     const head = document.createElement('div');
     head.className = 'fcsc-chat-head';
-    head.innerHTML = '<span class="fcsc-chat-who"><img alt="" src="assets/chat_mascot.png">ROOT AI</span><button type="button" class="fcsc-reset">새 대화</button>';
+    head.innerHTML = '<span class="fcsc-chat-who"><img alt="" src="assets/chat_mascot.png">ROOT AI</span><span class="mr-chat-acts">' + LOG_OPEN_BTN + '<button type="button" class="fcsc-reset">새 대화</button></span>';
     chatEl = document.createElement('div');
     chatEl.className = 'fcsc-chat';
     chatEl.innerHTML = '<div class="fcsc-end" aria-hidden="true"></div>';
@@ -443,30 +445,36 @@
     main.insertBefore(head, askBox);
     main.insertBefore(chatEl, askBox);
     head.querySelector('.fcsc-reset').addEventListener('click', resetChat);
+    head.querySelector('.mr-log-open').addEventListener('click', openLog);
+    placeLog();
   }
 
   function resetChat() {
     if (ctrl) ctrl.abort();
     history = [];
+    curId = null;
     const main = $('.fcsc-main');
     main.querySelectorAll('.fcsc-chat-head, .fcsc-chat').forEach((e) => e.remove());
     main.querySelectorAll('.fcsc-hero, .fcsc-ideas').forEach((e) => (e.style.display = ''));
     $('.fcsc-split').classList.remove('is-chat');
     chatEl = null;
+    placeLog(); renderLog();
   }
 
-  function addRow(role, html) {
+  // at: 저장된 대화를 다시 그릴 때 그 메시지 시각(ms). 없으면 지금 시각
+  function addRow(role, html, at, noScroll) {
     const row = document.createElement('div');
+    const when = at ? atStr(at) : timeStr();
     if (role === 'user') {
       row.className = 'pcb-row pcb-row--user';
-      row.innerHTML = '<div class="pcb-col pcb-col--right"><div class="pcb-msg pcb-msg--user"></div><div class="pcb-time pcb-time--right">' + timeStr() + '</div></div>';
+      row.innerHTML = '<div class="pcb-col pcb-col--right"><div class="pcb-msg pcb-msg--user"></div><div class="pcb-time pcb-time--right">' + when + '</div></div>';
       row.querySelector('.pcb-msg').textContent = html;
     } else {
       row.className = 'pcb-row pcb-row--bot';
-      row.innerHTML = '<img class="pcb-avatar" alt="" src="assets/chat_avatar.png"><div class="pcb-col"><div class="pcb-msg pcb-msg--bot"><div>' + html + '</div></div><div class="pcb-time pcb-time--left">' + timeStr() + '</div></div>';
+      row.innerHTML = '<img class="pcb-avatar" alt="" src="assets/chat_avatar.png"><div class="pcb-col"><div class="pcb-msg pcb-msg--bot"><div>' + html + '</div></div><div class="pcb-time pcb-time--left">' + when + '</div></div>';
     }
     chatEl.insertBefore(row, chatEl.querySelector('.fcsc-end'));
-    row.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    if (!noScroll) row.scrollIntoView({ block: 'end', behavior: 'smooth' });
     return row;
   }
 
@@ -480,6 +488,7 @@
     const bot = addRow('bot', '<p class="mr-typing">답변을 준비하고 있어요…</p>');
     const body = bot.querySelector('.pcb-msg--bot > div');
     const prev = history.slice();
+    const qAt = Date.now();
     history.push({ role: 'user', content: q });
     if (ctrl) ctrl.abort();
     ctrl = new AbortController();
@@ -507,8 +516,9 @@
           else if (ev.type === 'error') { throw new Error(ev.message || '오류'); }
         }
       }
-      if (!text) { text = '답변을 받지 못했어요. 다시 질문해 주세요.'; paint(); }
+      if (!text) { text = '답변을 받지 못했어요. 다시 질문해 주세요.'; paint(); history.pop(); return; }   // 빈 답변은 기록에 남기지 않음
       history.push({ role: 'assistant', content: text });
+      saveTurn(q, qAt, text);   // 답을 끝까지 받은 질문·답만 대화 기록에 저장
     } catch (e) {
       if (e.name === 'AbortError') return;
       body.innerHTML = '<p>답변을 가져오지 못했어요. (' + esc(String(e.message || e)) + ')</p>';
@@ -541,6 +551,230 @@
       r.onend = () => mic.classList.remove('is-on');
       r.start();
     });
+  }
+
+  /* ── 챗봇 대화 기록 (대화방 목록 · 골라서 이어서 대화) ─────────
+   * 지금은 이 브라우저 localStorage 에만 저장하는 시안. 실서비스는 서버 저장 필요 → docs/ROOT_이식가이드.md 「챗봇 대화 기록」
+   * 저장 모양: [{ id, title, createdAt, updatedAt, messages: [{ role: 'user'|'assistant', content, at }] }]  (시각은 ms)
+   * 키: minroot:chats:v1:<ROOT 로그인 아이디(user.idUser), 없으면 guest> · 최대 CHATS_MAX 개(오래 안 쓴 대화부터 지움) */
+  const CHATS_KEY = 'minroot:chats:v1:' + (() => { try { const u = JSON.parse(localStorage.getItem('user') || 'null'); if (u && u.idUser) return u.idUser; } catch (e) {} return 'guest'; })();
+  const CHATS_MAX = 200;
+  let curId = null;      // 지금 보고 있는 대화 id (새 대화면 null → 첫 답을 받을 때 만들어짐)
+  let logEl = null, logOv = null;
+  const LOG_OPEN_BTN = '<button type="button" class="mr-log-open" title="지난 대화 보기"><span class="material-symbols-rounded" aria-hidden="true">history</span>대화 기록</button>';
+
+  function loadChats() {
+    try { const v = JSON.parse(localStorage.getItem(CHATS_KEY) || '[]'); return Array.isArray(v) ? v.filter((c) => c && c.id && Array.isArray(c.messages)) : []; } catch (e) { return []; }
+  }
+  function saveChats(list) {
+    list = list.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, CHATS_MAX);
+    // 저장 공간이 차면 오래된 대화부터 하나씩 빼고 다시 시도, 그래도 안 되면 조용히 포기
+    for (;;) {
+      try { localStorage.setItem(CHATS_KEY, JSON.stringify(list)); return; }
+      catch (e) { if (list.length <= 1) return; list.pop(); }
+    }
+  }
+  const makeTitle = (q) => { const s = q.replace(/\s+/g, ' ').trim(); return s.length > 30 ? s.slice(0, 30) + '…' : s; };
+  function saveTurn(q, qAt, a) {
+    const list = loadChats(); const now = Date.now();
+    let c = curId && list.find((x) => x.id === curId);
+    if (!c) {
+      c = { id: 'c' + now.toString(36) + Math.random().toString(36).slice(2, 6), title: makeTitle(q), createdAt: qAt, updatedAt: now, messages: [] };
+      list.push(c); curId = c.id;
+    }
+    c.messages.push({ role: 'user', content: q, at: qAt }, { role: 'assistant', content: a, at: now });
+    c.updatedAt = now;
+    saveChats(list); renderLog();
+  }
+  function updateChat(id, fn) { const list = loadChats(); const i = list.findIndex((x) => x.id === id); if (i < 0) return; if (fn(list, i) !== false) saveChats(list); renderLog(); }
+
+  // 목록에서 고른 대화를 다시 그리고, 이어서 질문하면 그 대화의 메시지를 history 로 보냄
+  function openRoom(id) {
+    const c = loadChats().find((x) => x.id === id);
+    if (!c) return;
+    if (ctrl) ctrl.abort();
+    curId = c.id;
+    history = c.messages.map((m) => ({ role: m.role, content: m.content }));
+    enterChat();
+    chatEl.querySelectorAll('.pcb-row').forEach((r) => r.remove());
+    c.messages.forEach((m) => addRow(m.role === 'user' ? 'user' : 'bot', m.role === 'user' ? m.content : md(m.content), m.at, true));
+    chatEl.querySelector('.fcsc-end').scrollIntoView({ block: 'end' });
+    closeLog(); renderLog();
+    const ta = $('.fcsc-input'); if (ta) ta.focus({ preventScroll: true });
+  }
+
+  // 묶음: 오늘 / 어제 / 지난 7일 / 지난 30일 / 그 이전은 「2026년 10월」 (마지막으로 대화한 시각 기준)
+  function groupName(t) {
+    const d0 = new Date(); d0.setHours(0, 0, 0, 0); const day = 864e5, s = d0.getTime();
+    if (t >= s) return '오늘';
+    if (t >= s - day) return '어제';
+    if (t >= s - 7 * day) return '지난 7일';
+    if (t >= s - 30 * day) return '지난 30일';
+    const d = new Date(t); return d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월';
+  }
+  const whenStr = (t) => { const d = new Date(t); return d.toDateString() === new Date().toDateString() ? timeStr(d) : (d.getMonth() + 1) + '월 ' + d.getDate() + '일'; };
+
+  const LOG_CSS =
+    '.mr-log{display:flex;flex-direction:column;box-sizing:border-box;min-width:0;background:#fff;color:#1F2A12;font-family:inherit;text-align:left}' +
+    '.mr-log:not(.is-dock){position:fixed;top:0;bottom:0;left:0;z-index:9401;width:min(320px,88vw);box-shadow:8px 0 30px rgba(20,25,12,.18);transform:translateX(-100%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}' +
+    '.mr-log:not(.is-dock).is-open{transform:none;visibility:visible;transition:transform .22s ease}' +
+    '.mr-log.is-dock{position:sticky;top:16px;align-self:start !important;height:calc(100vh - 120px);min-height:420px;border:1px solid #E3E6EA;border-radius:22px;overflow:hidden}' +
+    '.mr-log.is-dock .mr-log-x{display:none}' +
+    '.mr-log-ov{position:fixed;inset:0;z-index:9400;background:rgba(20,25,12,.32);opacity:0;pointer-events:none;transition:opacity .2s}.mr-log-ov.is-on{opacity:1;pointer-events:auto}' +
+    '.mr-log-head{display:flex;align-items:center;justify-content:space-between;min-height:40px;padding:14px 12px 10px 18px}.mr-log-head b{font-size:17px;font-weight:800}' +
+    '.mr-log-x{width:38px;height:38px;border:1px solid transparent;border-radius:10px;background:none;color:#5b6152;font-size:20px;cursor:pointer}.mr-log-x:hover{border-color:#B5D334}' +
+    '.mr-log-new{display:flex;align-items:center;justify-content:center;gap:6px;height:44px;margin:0 14px 10px;border:0;border-radius:12px;background:#769636;color:#fff;font:inherit;font-size:15px;font-weight:800;cursor:pointer}' +
+    '.mr-log-new:hover,.mr-log-new:focus-visible{box-shadow:0 0 0 2px #B5D334;outline:none}.mr-log-new .material-symbols-rounded{font-size:20px}' +
+    '.mr-log-search{display:flex;align-items:center;gap:6px;height:40px;margin:0 14px 4px;padding:0 12px;border:1px solid #DFE3D6;border-radius:12px;background:#fff;color:#7a8270;cursor:text}' +
+    '.mr-log-search:hover,.mr-log-search:focus-within{border-color:#B5D334}.mr-log-search .material-symbols-rounded{font-size:19px}' +
+    '.mr-log-search input{flex:1 1 auto;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:14px;color:#1F2A12}' +
+    '.mr-log-list{flex:1 1 auto;overflow:auto;padding:2px 10px 12px}' +
+    '.mr-log-grp{margin:14px 8px 4px;font-size:12.5px;font-weight:800;color:#769636}' +
+    '.mr-log-item{display:flex;align-items:center;margin:2px 0;border:1px solid transparent;border-radius:12px}' +
+    '.mr-log-item:hover{border-color:#B5D334}.mr-log-item.is-on{background:#EAF0CC;border-color:#B5D334}' +
+    '.mr-log-go{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px;padding:9px 6px 9px 10px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.mr-log-go:focus-visible{outline:2px solid #B5D334;border-radius:10px}' +
+    '.mr-log-t{font-size:14.5px;font-weight:700;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.mr-log-when{font-size:12px;color:#7a8270}' +
+    '.mr-log-snip{font-size:12.5px;color:#5b6152;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mr-log-snip b{color:#769636}' +
+    '.mr-log-acts{display:none;flex:0 0 auto;gap:2px;padding-right:6px}' +
+    '.mr-log-item:hover .mr-log-acts,.mr-log-item:focus-within .mr-log-acts{display:flex}' +
+    '@media (hover:none){.mr-log-acts{display:flex}}' +
+    '.mr-log-acts button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid transparent;border-radius:8px;background:none;color:#5b6152;cursor:pointer}' +
+    '.mr-log-acts button:hover,.mr-log-acts button:focus-visible{border-color:#B5D334;background:#fff;outline:none}.mr-log-acts .material-symbols-rounded{font-size:18px}' +
+    '.mr-log-ren{flex:1 1 auto;min-width:0;height:36px;margin:5px;padding:0 10px;border:1.5px solid #B5D334;border-radius:9px;font:inherit;font-size:14px;color:#1F2A12;outline:0}' +
+    '.mr-log-cf{flex:1 1 auto;min-width:0;padding:10px 10px 10px 12px;font-size:13.5px;line-height:1.45}.mr-log-cf p{margin:0 0 8px;word-break:keep-all}' +
+    '.mr-log-cf div{display:flex;gap:6px}.mr-log-cf button{height:32px;padding:0 14px;border-radius:9px;font:inherit;font-size:13.5px;font-weight:800;cursor:pointer}' +
+    '.mr-log-del{border:0;background:#769636;color:#fff}.mr-log-del:hover{box-shadow:0 0 0 2px #B5D334}' +
+    '.mr-log-no{border:1px solid #DFE3D6;background:#fff;color:#1F2A12}.mr-log-no:hover{border-color:#B5D334}' +
+    '.mr-log-empty{padding:28px 12px;text-align:center;font-size:13.5px;line-height:1.6;color:#7a8270;word-break:keep-all}' +
+    '.mr-log-note{margin:0;padding:10px 14px 14px;border-top:1px solid #EEF0E8;font-size:11.5px;color:#8a9180;text-align:center}' +
+    '.mr-log-open{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border:1px solid #DFE3D6;border-radius:999px;background:#fff;color:#1F2A12;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap}' +
+    '.mr-log-open:hover,.mr-log-open:focus-visible{border-color:#B5D334;box-shadow:0 0 0 1px #B5D334;outline:none}.mr-log-open .material-symbols-rounded{font-size:18px}' +
+    '.mr-chat-acts{display:inline-flex;align-items:center;gap:8px}' +
+    '.fcsc-page .fcsc-ask-foot .mr-log-open{margin-right:auto}' +
+    '.fcsc-split.is-chat .fcsc-ask-foot .mr-log-open,.fcsc-split.has-log .fcsc-chat-head .mr-log-open{display:none}' +
+    /* 큰 화면 채팅: 왼쪽에 대화 기록 칸을 붙박이로 (좁은 화면은 버튼으로 여는 서랍) */
+    /* 모바일(600px 이하): 위 「화면 꽉 차게」 2칸 규칙(minmax(480px))이 폰에서 채팅·입력란을 덮어서 한 칸으로 (2026-11-14, 대화 기록 서랍 버튼이 가려지던 문제) */
+    '@media (max-width:600px){.fcsc-page .fcsc-split{grid-template-columns:minmax(0,1fr) !important;padding-left:16px !important;padding-right:16px !important}}' +
+    '@media (min-width:1281px){.fcsc-page .fcsc-split.is-chat.has-log{grid-template-columns:272px minmax(0,1.5fr) minmax(400px,1fr) !important;gap:28px !important;padding-left:24px !important}}' +
+    '@media (min-width:1600px){.fcsc-page .fcsc-split.is-chat.has-log{grid-template-columns:310px minmax(0,1.5fr) minmax(440px,1fr) !important;gap:40px !important}' +
+      '.mr-log-head b{font-size:19px}.mr-log-new{height:48px;font-size:16px}.mr-log-search input{font-size:15px}.mr-log-grp{font-size:13.5px}' +
+      '.mr-log-t{font-size:16px}.mr-log-when{font-size:13px}.mr-log-snip{font-size:13.5px}.mr-log-open{font-size:15px;height:38px}}';
+
+  function initChatLog() {
+    if (logEl) return;
+    const st = document.createElement('style'); st.textContent = LOG_CSS; document.head.appendChild(st);
+    logOv = document.createElement('div'); logOv.className = 'mr-log-ov';
+    logOv.addEventListener('click', () => closeLog());
+    logEl = document.createElement('aside');
+    logEl.className = 'mr-log'; logEl.setAttribute('aria-label', '대화 기록');
+    logEl.innerHTML =
+      '<div class="mr-log-head"><b>대화 기록</b><button type="button" class="mr-log-x" aria-label="대화 기록 닫기">✕</button></div>' +
+      '<button type="button" class="mr-log-new"><span class="material-symbols-rounded" aria-hidden="true">add</span>새 대화</button>' +
+      '<label class="mr-log-search"><span class="material-symbols-rounded" aria-hidden="true">search</span><input type="search" placeholder="제목·내용 검색" aria-label="대화 기록 검색"></label>' +
+      '<div class="mr-log-list"></div>' +
+      '<p class="mr-log-note">이 기기(브라우저)에만 저장돼요 · 최근 ' + CHATS_MAX + '개</p>';
+    document.body.append(logOv, logEl);
+    logEl.querySelector('.mr-log-x').addEventListener('click', () => closeLog());
+    logEl.querySelector('.mr-log-new').addEventListener('click', () => { closeLog(); resetChat(); const ta = $('.fcsc-input'); if (ta) ta.focus(); });
+    logEl.querySelector('.mr-log-search input').addEventListener('input', renderLog);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && logEl.classList.contains('is-open') && !e.target.closest('.mr-log-item')) closeLog(); });
+    // 홈(질문 전) 화면: 입력란 왼쪽 아래에 「대화 기록」 버튼
+    const foot = $('.fcsc-ask-foot');
+    if (foot && !foot.querySelector('.mr-log-open')) { foot.insertAdjacentHTML('afterbegin', LOG_OPEN_BTN); foot.querySelector('.mr-log-open').addEventListener('click', openLog); }
+    const mq = window.matchMedia('(min-width:1281px)');
+    (mq.addEventListener ? mq.addEventListener('change', placeLog) : mq.addListener(placeLog));
+    placeLog(); renderLog();
+  }
+  // 큰 화면 + 채팅 중이면 채팅 왼쪽 칸에 붙박이, 아니면 서랍
+  function placeLog() {
+    if (!logEl) return;
+    const split = $('.fcsc-split');
+    const dock = !!split && split.classList.contains('is-chat') && window.matchMedia('(min-width:1281px)').matches;
+    if (dock) {
+      closeLog();
+      split.classList.add('has-log'); logEl.classList.add('is-dock');
+      if (logEl.parentElement !== split) split.prepend(logEl);
+    } else {
+      if (split) split.classList.remove('has-log');
+      logEl.classList.remove('is-dock');
+      if (logEl.parentElement !== document.body) document.body.appendChild(logEl);
+    }
+  }
+  function openLog() {
+    if (!logEl) return;
+    renderLog();
+    if (logEl.classList.contains('is-dock')) { logEl.querySelector('.mr-log-search input').focus(); return; }
+    logEl.classList.add('is-open'); logOv.classList.add('is-on');
+    logEl.querySelector('.mr-log-new').focus({ preventScroll: true });
+  }
+  function closeLog() { if (logEl) { logEl.classList.remove('is-open'); logOv.classList.remove('is-on'); } }
+
+  function renderLog() {
+    if (!logEl) return;
+    const box = logEl.querySelector('.mr-log-list');
+    const kw = logEl.querySelector('.mr-log-search input').value.trim().toLowerCase();
+    let list = loadChats().sort((a, b) => b.updatedAt - a.updatedAt);
+    const snip = {};
+    if (kw) {
+      list = list.filter((c) => {
+        if ((c.title || '').toLowerCase().includes(kw)) return true;
+        const m = c.messages.find((x) => String(x.content).toLowerCase().includes(kw));
+        if (!m) return false;
+        const s = String(m.content).replace(/\s+/g, ' '), i = s.toLowerCase().indexOf(kw), from = Math.max(0, i - 12);
+        snip[c.id] = (from ? '…' : '') + esc(s.slice(from, i)) + '<b>' + esc(s.slice(i, i + kw.length)) + '</b>' + esc(s.slice(i + kw.length, i + kw.length + 40));
+        return true;
+      });
+    }
+    if (!list.length) {
+      box.innerHTML = '<div class="mr-log-empty">' + (kw ? '찾는 대화가 없어요.' : '아직 대화 기록이 없어요.<br>루티에게 질문하면 여기에 날짜별로 남아요.') + '</div>';
+      return;
+    }
+    let html = '', last = '';
+    list.forEach((c) => {
+      const g = groupName(c.updatedAt);
+      if (g !== last) { html += '<div class="mr-log-grp">' + g + '</div>'; last = g; }
+      html += '<div class="mr-log-item' + (c.id === curId ? ' is-on' : '') + '" data-id="' + esc(c.id) + '">' +
+        '<button type="button" class="mr-log-go" title="' + esc(c.title || '') + '"><span class="mr-log-t">' + esc(c.title || '(제목 없음)') + '</span>' +
+        (snip[c.id] ? '<span class="mr-log-snip">' + snip[c.id] + '</span>' : '') +
+        '<span class="mr-log-when">' + whenStr(c.updatedAt) + ' · 질문 ' + c.messages.filter((m) => m.role === 'user').length + '개</span></button>' +
+        '<span class="mr-log-acts"><button type="button" data-act="ren" aria-label="이름 바꾸기" title="이름 바꾸기"><span class="material-symbols-rounded" aria-hidden="true">edit</span></button>' +
+        '<button type="button" data-act="del" aria-label="삭제" title="삭제"><span class="material-symbols-rounded" aria-hidden="true">delete</span></button></span></div>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('.mr-log-item').forEach((it) => {
+      const id = it.dataset.id;
+      it.querySelector('.mr-log-go').addEventListener('click', () => openRoom(id));
+      it.querySelector('[data-act="ren"]').addEventListener('click', () => renameItem(it, id));
+      it.querySelector('[data-act="del"]').addEventListener('click', () => confirmDelete(it, id));
+    });
+  }
+  // 이름 바꾸기: 그 자리에서 입력 → Enter·바깥 클릭 저장, Esc 취소
+  function renameItem(it, id) {
+    const c = loadChats().find((x) => x.id === id); if (!c) return;
+    it.innerHTML = '<input class="mr-log-ren" maxlength="60" aria-label="대화 이름">';
+    const inp = it.querySelector('input'); inp.value = c.title || '';
+    let done = false;
+    const finish = (ok) => {
+      if (done) return; done = true;
+      const v = inp.value.replace(/\s+/g, ' ').trim();
+      if (ok && v && v !== c.title) updateChat(id, (list, i) => { list[i].title = v; });
+      else renderLog();
+    };
+    inp.addEventListener('keydown', (e) => { if (e.isComposing) return; if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    inp.addEventListener('blur', () => finish(true));
+    inp.focus(); inp.select();
+  }
+  // 삭제: 브라우저 확인창 대신 그 항목 자리에서 한 번 더 확인
+  function confirmDelete(it, id) {
+    const c = loadChats().find((x) => x.id === id); if (!c) return;
+    it.innerHTML = '<div class="mr-log-cf"><p>「' + esc(c.title || '') + '」 대화를 지울까요?</p><div><button type="button" class="mr-log-del">삭제</button><button type="button" class="mr-log-no">취소</button></div></div>';
+    it.querySelector('.mr-log-no').addEventListener('click', renderLog);
+    it.querySelector('.mr-log-del').addEventListener('click', () => {
+      updateChat(id, (list, i) => { list.splice(i, 1); });
+      if (id === curId) resetChat();
+    });
+    it.querySelector('.mr-log-no').focus();
   }
 
   /* ── 헤더·하단 탭 → 실제 ROOT ─────────────────── */
@@ -1048,6 +1282,6 @@
     if (logo.parentElement) { logo.parentElement.style.display = 'flex'; logo.parentElement.style.alignItems = 'center'; }
   }
 
-  function init() { initBurger(); buildQuick(); initChips(); initAsk(); initNav(); initModeSwitch(); initRutiInquiry(); showDaily(); }
+  function init() { initBurger(); buildQuick(); initChips(); initAsk(); initChatLog(); initNav(); initModeSwitch(); initRutiInquiry(); showDaily(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
