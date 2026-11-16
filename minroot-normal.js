@@ -434,7 +434,7 @@
     mountRank();
     var t = document.querySelector('#workspace .mr-today');
     if (!t || document.querySelector('#workspace .mr-news')) return;
-    var b = document.createElement('div'); b.className = 'mr-news'; var ft = t.parentNode.querySelector(':scope > footer'); if (ft) t.parentNode.insertBefore(b, ft); else t.parentNode.appendChild(b); loadNews();
+    var b = document.createElement('div'); b.className = 'mr-news'; t.before(b); loadNews();   // 최근 보험 뉴스: 날씨·운세 위로 (2026-11-16)
   }
 
   // ── 지금 많이 찾는 상품 순위 (주요 영업자료·공지사항 자리) ──
@@ -553,7 +553,9 @@
     box.querySelectorAll('[data-sel]').forEach(function (b) { b.addEventListener('click', function () { rk.sel = +b.dataset.sel; paintRank(); if (window.innerWidth < 760) { var d = box.querySelector('.mr-rk-dt'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }); });
     box.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); goSide(b.dataset.go === 'product' ? /상품 비교서/ : /보험료 비교/); }); });
   }
+  var SHOW_RANK = false;   // 「오늘의 황금상품은?」 숨김 (2026-11-16) — true 로 바꾸면 다시 보임
   function mountRank() {
+    if (!SHOW_RANK) return;
     var t = document.querySelector('#workspace .mr-today');
     if (!t || document.querySelector('#workspace .mr-rank')) return;
     var b = document.createElement('div'); b.className = 'mr-rank'; t.after(b); paintRank();
