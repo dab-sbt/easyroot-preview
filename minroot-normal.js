@@ -434,7 +434,7 @@
     mountRank();
     var t = document.querySelector('#workspace .mr-today');
     if (!t || document.querySelector('#workspace .mr-news')) return;
-    var b = document.createElement('div'); b.className = 'mr-news'; t.after(b); loadNews();   // 최근 보험 뉴스: 오늘의 날씨·운세 바로 아래 (황금상품 자리)
+    var b = document.createElement('div'); b.className = 'mr-news'; var ft = t.parentNode.querySelector(':scope > footer'); if (ft) t.parentNode.insertBefore(b, ft); else t.parentNode.appendChild(b); loadNews();
   }
 
   // ── 지금 많이 찾는 상품 순위 (주요 영업자료·공지사항 자리) ──
